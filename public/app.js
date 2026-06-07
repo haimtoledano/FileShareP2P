@@ -1,3 +1,369 @@
+const translations = {
+  he: {
+    title: "P2P FileShare | שיתוף קבצים ישיר ומאובטח",
+    tagline: "שיתוף קבצים ישיר ומאובטח מקצה לקצה, ישירות מהדפדפן ללא שרת תיווך באמצע.",
+    status_disconnected: "לא מחובר",
+    status_connecting: "מתחבר לשרת התיווך...",
+    status_conn_error: "שגיאת חיבור לשרת",
+    status_waiting_peer: "ממתין לצד השני...",
+    status_peer_connected: "מחובר למשתמש השני",
+    status_p2p_active: "חיבור ישיר (P2P) פעיל",
+    status_p2p_failed: "החיבור הישיר נכשל",
+    mode_send_title: "שלח קובץ",
+    mode_send_desc: "העלה קובץ וקבל קישור או קוד שיתוף מיידי",
+    mode_receive_title: "קבל קובץ",
+    mode_receive_desc: "הזן מזהה שיתוף כדי להתחבר לשולח ולהוריד קובץ",
+    auth_placeholder: "הזן קוד גישה מורשה לשולח",
+    btn_submit_auth: "אישור",
+    btn_back: "חזור לבחירה",
+    join_placeholder: "הזן מזהה שיתוף (UUID)",
+    btn_connect: "התחבר",
+    drag_zone_title: "גרור לכאן קובץ או לחץ לבחירה",
+    drag_zone_desc: "תומך בכל סוגי הקבצים ובכל הגדלים",
+    btn_remove_title: "הסר קובץ",
+    share_id_label: "מזהה השיתוף שלך:",
+    share_link_label: "קישור לשיתוף:",
+    btn_copy_title: "העתק קישור",
+    status_waiting_peer_tip: "ממתין לחיבור של הצד השני...",
+    btn_cancel_sender: "חזור לתפריט",
+    waiting_connecting_title: "מתחבר לשולח...",
+    waiting_connecting_desc: "יוצר חיבור ישיר ומאובטח. אנא המתן.",
+    btn_cancel: "ביטول",
+    transfer_title_receiving: "מקבל קובץ...",
+    transfer_title_sending: "שולח קובץ...",
+    transfer_dir_download: "הורדה",
+    transfer_dir_upload: "העלאה",
+    transfer_bytes_label: "גודל שהועבר:",
+    transfer_eta_label: "זמן נותר משוער:",
+    btn_abort_transfer: "ביטول העברה",
+    complete_title_sender: "הקובץ נשלח בהצלחה!",
+    complete_desc_sender: "הקובץ {filename} הועבר ישירות ובצורה מאובטחת.",
+    complete_title_receiver: "הקובץ התקבל בהצלחה!",
+    complete_desc_receiver: "הקובץ {filename} מוכן להורדה.",
+    btn_download: "הורד קובץ באופן ידני",
+    btn_share_new: "שתף קובץ חדש",
+    footer_privacy_tip: "פרטיות מקסימלית: הקבצים מועברים ישירות בצורה מוצפנת ומבוזרת (P2P) ולא נשמרים בשרת שלנו.",
+    alert_signaling_disconnected: "החיבור לשרת התיווך נותק.",
+    alert_room_full: "החדר מלא או לא זמין.",
+    alert_unauthorized: "קוד גישה לשולח שגוי או פג תוקף.",
+    alert_peer_disconnected: "הצד השני התנתק. ההעברה בוטלה.",
+    alert_p2p_disconnected: "חיבור ה-P2P נותק.",
+    alert_transfer_aborted: "הצד השני ביטל את ההעברה.",
+    alert_enter_passcode: "אנא הזן קוד גישה מורשה",
+    alert_enter_valid_code: "אנא הזן מזהה שיתוף תקין (מינימום 8 תווים)",
+    speed_suffix: "לשנייה",
+    eta_calculating: "מחשב...",
+    eta_seconds: "כ-{seconds} שניות",
+    eta_minutes_seconds: "כ-{minutes} דקות ו-{seconds} שניות"
+  },
+  en: {
+    title: "P2P FileShare | Direct and Secure File Sharing",
+    tagline: "Direct end-to-end (P2P) file sharing, straight from your browser with no intermediary server.",
+    status_disconnected: "Disconnected",
+    status_connecting: "Connecting to signaling server...",
+    status_conn_error: "Connection error",
+    status_waiting_peer: "Waiting for peer...",
+    status_peer_connected: "Connected to peer",
+    status_p2p_active: "Direct connection (P2P) active",
+    status_p2p_failed: "Direct connection failed",
+    mode_send_title: "Send File",
+    mode_send_desc: "Upload a file and get a link or direct sharing code",
+    mode_receive_title: "Receive File",
+    mode_receive_desc: "Enter a sharing ID to connect to the sender and download the file",
+    auth_placeholder: "Enter authorized sender passcode",
+    btn_submit_auth: "Confirm",
+    btn_back: "Back to selection",
+    join_placeholder: "Enter sharing ID (UUID)",
+    btn_connect: "Connect",
+    drag_zone_title: "Drag and drop a file here or click to select",
+    drag_zone_desc: "Supports all file types and sizes",
+    btn_remove_title: "Remove file",
+    share_id_label: "Your Sharing ID:",
+    share_link_label: "Link to share:",
+    btn_copy_title: "Copy link",
+    status_waiting_peer_tip: "Waiting for the other side to connect...",
+    btn_cancel_sender: "Back to menu",
+    waiting_connecting_title: "Connecting to sender...",
+    waiting_connecting_desc: "Establishing a direct and secure connection. Please wait.",
+    btn_cancel: "Cancel",
+    transfer_title_receiving: "Receiving file...",
+    transfer_title_sending: "Sending file...",
+    transfer_dir_download: "Download",
+    transfer_dir_upload: "Upload",
+    transfer_bytes_label: "Transferred size:",
+    transfer_eta_label: "Estimated remaining time:",
+    btn_abort_transfer: "Abort transfer",
+    complete_title_sender: "File sent successfully!",
+    complete_desc_sender: "The file {filename} was transferred directly and securely.",
+    complete_title_receiver: "File received successfully!",
+    complete_desc_receiver: "The file {filename} is ready for download.",
+    btn_download: "Download file manually",
+    btn_share_new: "Share new file",
+    footer_privacy_tip: "Maximum privacy: Files are transferred directly in an encrypted and decentralized (P2P) manner and are not stored on our server.",
+    alert_signaling_disconnected: "Connection to signaling server disconnected.",
+    alert_room_full: "Room is full or unavailable.",
+    alert_unauthorized: "Invalid or expired sender access code.",
+    alert_peer_disconnected: "The other party disconnected. Transfer cancelled.",
+    alert_p2p_disconnected: "P2P connection disconnected.",
+    alert_transfer_aborted: "The other party aborted the transfer.",
+    alert_enter_passcode: "Please enter authorized access code",
+    alert_enter_valid_code: "Please enter a valid sharing ID (minimum 8 characters)",
+    speed_suffix: "per second",
+    eta_calculating: "Calculating...",
+    eta_seconds: "About {seconds} seconds",
+    eta_minutes_seconds: "About {minutes} minutes and {seconds} seconds"
+  },
+  es: {
+    title: "P2P FileShare | Compartir Archivos de Forma Directa y Segura",
+    tagline: "Comparta archivos de extremo a extremo (P2P) directamente desde su navegador, sin servidor intermediario.",
+    status_disconnected: "Desconectado",
+    status_connecting: "Conectando al servidor de señalización...",
+    status_conn_error: "Error de conexión",
+    status_waiting_peer: "Esperando al otro usuario...",
+    status_peer_connected: "Conectado al otro usuario",
+    status_p2p_active: "Conexión directa (P2P) activa",
+    status_p2p_failed: "Conexión directa fallida",
+    mode_send_title: "Enviar Archivo",
+    mode_send_desc: "Suba un archivo y obtenga un enlace o código de intercambio directo",
+    mode_receive_title: "Recibir Archivo",
+    mode_receive_desc: "Ingrese un ID de intercambio para conectarse al remitente y descargar el archivo",
+    auth_placeholder: "Ingrese el código de acceso del remitente",
+    btn_submit_auth: "Confirmar",
+    btn_back: "Volver a la selección",
+    join_placeholder: "Ingrese el ID de intercambio (UUID)",
+    btn_connect: "Conectar",
+    drag_zone_title: "Arrastre un archivo aquí o haga clic para seleccionar",
+    drag_zone_desc: "Soporta todos los tipos de archivos y tamaños",
+    btn_remove_title: "Eliminar archivo",
+    share_id_label: "Su ID de intercambio:",
+    share_link_label: "Enlace para compartir:",
+    btn_copy_title: "Copiar enlace",
+    status_waiting_peer_tip: "Esperando a que el otro usuario se conecte...",
+    btn_cancel_sender: "Volver al menú",
+    waiting_connecting_title: "Conectando al remitente...",
+    waiting_connecting_desc: "Estableciendo una conexión directa y segura. Por favor espere.",
+    btn_cancel: "Cancelar",
+    transfer_title_receiving: "Recibiendo archivo...",
+    transfer_title_sending: "Enviando archivo...",
+    transfer_dir_download: "Descarga",
+    transfer_dir_upload: "Subida",
+    transfer_bytes_label: "Tamaño transferido:",
+    transfer_eta_label: "Tiempo restante estimado:",
+    btn_abort_transfer: "Abortar transferencia",
+    complete_title_sender: "¡Archivo enviado con éxito!",
+    complete_desc_sender: "El archivo {filename} fue transferido directa y seguramente.",
+    complete_title_receiver: "¡Archivo recibido con éxito!",
+    complete_desc_receiver: "El archivo {filename} está listo para descargar.",
+    btn_download: "Descargar archivo manualmente",
+    btn_share_new: "Compartir nuevo archivo",
+    footer_privacy_tip: "Privacidad máxima: Los archivos se transfieren directamente de manera cifrada y descentralizada (P2P) y no se guardan en nuestro servidor.",
+    alert_signaling_disconnected: "Se desconectó la conexión con el servidor de señalización.",
+    alert_room_full: "La sala está llena o no está disponible.",
+    alert_unauthorized: "Código de acceso del remitente incorrecto o vencido.",
+    alert_peer_disconnected: "La otra parte se desconectó. Transferencia cancelada.",
+    alert_p2p_disconnected: "Conexión P2P desconectada.",
+    alert_transfer_aborted: "La otra parte abortó la transferencia.",
+    alert_enter_passcode: "Por favor, ingrese el código de acceso autorizado",
+    alert_enter_valid_code: "Por favor, ingrese un ID de intercambio válido (mínimo 8 caracteres)",
+    speed_suffix: "por segundo",
+    eta_calculating: "Calculando...",
+    eta_seconds: "Aproximadamente {seconds} segundos",
+    eta_minutes_seconds: "Aproximadamente {minutes} minutos y {seconds} segundos"
+  },
+  ar: {
+    title: "P2P FileShare | مشاركة الملفات بشكل مباشر وآمن",
+    tagline: "مشاركة الملفات مباشرة من طرف إلى طرف (P2P) بدون الحاجة لخدمة وسيطة، مباشرة من المتصفح.",
+    status_disconnected: "غير متصل",
+    status_connecting: "جاري الاتصال بخادم الإشارة...",
+    status_conn_error: "خطأ في الاتصال",
+    status_waiting_peer: "بانتظار الطرف الآخر...",
+    status_peer_connected: "متصل بالطرف الآخر",
+    status_p2p_active: "الاتصال المباشر (P2P) نشط",
+    status_p2p_failed: "فشل الاتصال المباشر",
+    mode_send_title: "إرسال ملف",
+    mode_send_desc: "قم برفع ملف واحصل على رابط أو رمز مشاركة مباشر",
+    mode_receive_title: "استلام ملف",
+    mode_receive_desc: "أدخل معرف المشاركة للاتصال بالمرسل وتحميل الملف",
+    auth_placeholder: "أدخل رمز المرور المخول للمرسل",
+    btn_submit_auth: "تأكيد",
+    btn_back: "العودة للاختيار",
+    join_placeholder: "أدخل معرف المشاركة (UUID)",
+    btn_connect: "اتصال",
+    drag_zone_title: "اسحب الملف إلى هنا أو انقر للاختيار",
+    drag_zone_desc: "يدعم جميع أنواع وأحجام الملفات",
+    btn_remove_title: "إزالة الملف",
+    share_id_label: "معرف المشاركة الخاص بك:",
+    share_link_label: "رابط المشاركة:",
+    btn_copy_title: "نسخ الرابط",
+    status_waiting_peer_tip: "بانتظار اتصال الطرف الآخر...",
+    btn_cancel_sender: "العودة للقائمة",
+    waiting_connecting_title: "جاري الاتصال بالمرسل...",
+    waiting_connecting_desc: "جاري إنشاء اتصال مباشر وآمن. يرجى الانتظار.",
+    btn_cancel: "إلغاء",
+    transfer_title_receiving: "جاري استلام الملف...",
+    transfer_title_sending: "جاري إرسال الملف...",
+    transfer_dir_download: "تنزيل",
+    transfer_dir_upload: "رفع",
+    transfer_bytes_label: "الحجم المنقول:",
+    transfer_eta_label: "الوقت المتبقي المقدر:",
+    btn_abort_transfer: "إلغاء النقل",
+    complete_title_sender: "تم إرسال الملف بنجاح!",
+    complete_desc_sender: "تم نقل الملف {filename} بشكل مباشر وآمن.",
+    complete_title_receiver: "تم استلام الملف بنجاح!",
+    complete_desc_receiver: "الملف {filename} جاهز للتنزيل.",
+    btn_download: "تنزيل الملف يدويًا",
+    btn_share_new: "مشاركة ملف جديد",
+    footer_privacy_tip: "أقصى درجات الخصوصية: يتم نقل الملفات مباشرة بشكل مشفر ولامركزي (P2P) ولا يتم حفظها على خادمنا.",
+    alert_signaling_disconnected: "تم قطع الاتصال بخادم الإشارة.",
+    alert_room_full: "الغرفة ممتلئة أو غير متاحة.",
+    alert_unauthorized: "رمز مرور المرسل غير صالح أو منتهي الصلاحية.",
+    alert_peer_disconnected: "انفصل الطرف الآخر. تم إلغاء النقل.",
+    alert_p2p_disconnected: "انقطع اتصال P2P.",
+    alert_transfer_aborted: "ألغى الطرف الآخر عملية النقل.",
+    alert_enter_passcode: "يرجى إدخال رمز المرور المعتمد",
+    alert_enter_valid_code: "يرجى إدخال معرف مشاركة صالح (8 رموز على الأقل)",
+    speed_suffix: "في الثانية",
+    eta_calculating: "جاري الحساب...",
+    eta_seconds: "حوالي {seconds} ثوانٍ",
+    eta_minutes_seconds: "حوالي {minutes} دقائق و {seconds} ثوانٍ"
+  },
+  ru: {
+    title: "P2P FileShare | Прямой и безопасный обмен файлами",
+    tagline: "Прямой одноранговый (P2P) обмен файлами прямо из браузера без промежуточного сервера.",
+    status_disconnected: "Не подключено",
+    status_connecting: "Подключение к серверу сигнализации...",
+    status_conn_error: "Ошибка подключения",
+    status_waiting_peer: "Ожидание второго участника...",
+    status_peer_connected: "Подключено к участнику",
+    status_p2p_active: "Прямое подключение (P2P) активно",
+    status_p2p_failed: "Прямое подключение не удалось",
+    mode_send_title: "Отправить файл",
+    mode_send_desc: "Загрузите файл и получите ссылку или код совместного доступа",
+    mode_receive_title: "Получить файл",
+    mode_receive_desc: "Введите идентификатор доступа для подключения к отправителю и скачивания файла",
+    auth_placeholder: "Введите код доступа отправителя",
+    btn_submit_auth: "Подтвердить",
+    btn_back: "Назад к выбору",
+    join_placeholder: "Введите идентификатор доступа (UUID)",
+    btn_connect: "Подключиться",
+    drag_zone_title: "Перетащите файл сюда или нажмите для выбора",
+    drag_zone_desc: "Поддерживаются файлы любых типов и размеров",
+    btn_remove_title: "Удалить файл",
+    share_id_label: "Ваш идентификатор доступа:",
+    share_link_label: "Ссылка для общего доступа:",
+    btn_copy_title: "Копировать ссылку",
+    status_waiting_peer_tip: "Ожидание подключения другого участника...",
+    btn_cancel_sender: "Вернуться в меню",
+    waiting_connecting_title: "Подключение к отправителю...",
+    waiting_connecting_desc: "Установление прямого и безопасного соединения. Пожалуйста, подождите.",
+    btn_cancel: "Отмена",
+    transfer_title_receiving: "Получение файла...",
+    transfer_title_sending: "Отправка файла...",
+    transfer_dir_download: "Скачивание",
+    transfer_dir_upload: "Загрузка",
+    transfer_bytes_label: "Передано:",
+    transfer_eta_label: "Оставшееся время:",
+    btn_abort_transfer: "Прервать передачу",
+    complete_title_sender: "Файл успешно отправлен!",
+    complete_desc_sender: "Файл {filename} был успешно передан напрямую и безопасно.",
+    complete_title_receiver: "Файл успешно получен!",
+    complete_desc_receiver: "Файл {filename} готов к скачиванию.",
+    btn_download: "Скачать файл вручную",
+    btn_share_new: "Поделиться новым файлом",
+    footer_privacy_tip: "Максимальная конфиденциальность: файлы передаются напрямую в зашифрованном и децентрализованном виде (P2P) и не сохраняются на нашем сервере.",
+    alert_signaling_disconnected: "Соединение с сервером сигнализации разорвано.",
+    alert_room_full: "Комната заполнена или недоступна.",
+    alert_unauthorized: "Неверный или истекший код доступа отправителя.",
+    alert_peer_disconnected: "Второй участник отключился. Передача отменена.",
+    alert_p2p_disconnected: "P2P соединение разорвано.",
+    alert_transfer_aborted: "Второй участник отменил передачу.",
+    alert_enter_passcode: "Пожалуйста, введите авторизованный код доступа",
+    alert_enter_valid_code: "Пожалуйста, введите корректный идентификатор (минимум 8 символов)",
+    speed_suffix: "в секунду",
+    eta_calculating: "Расчет...",
+    eta_seconds: "Около {seconds} сек.",
+    eta_minutes_seconds: "Около {minutes} мин. и {seconds} сек."
+  }
+};
+
+const rtlLanguages = ['he', 'ar'];
+
+function getCurrentLanguage() {
+  return localStorage.getItem('preferred_lang') || 'he';
+}
+
+function updateLanguage(lang) {
+  localStorage.setItem('preferred_lang', lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = rtlLanguages.includes(lang) ? 'rtl' : 'ltr';
+  
+  const t = translations[lang] || translations['he'];
+  document.title = t.title;
+
+  // Static translations
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) {
+      el.textContent = t[key];
+    }
+  });
+
+  // Placeholder translations
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) {
+      el.placeholder = t[key];
+    }
+  });
+
+  // Title translations
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (t[key]) {
+      el.title = t[key];
+    }
+  });
+
+  // Dynamic UI state translation
+  // 1. Connection Status Badge
+  const statusKey = statusBadge.getAttribute('data-status-key');
+  if (statusKey && t[statusKey]) {
+    statusText.textContent = t[statusKey];
+  }
+
+  // 2. Active Transfer Screen
+  if (sectionTransfer.classList.contains('active')) {
+    if (role === 'sender') {
+      transferTitle.textContent = t.transfer_title_sending;
+      transferDirection.textContent = t.transfer_dir_upload;
+    } else {
+      transferTitle.textContent = t.transfer_title_receiving;
+      transferDirection.textContent = t.transfer_dir_download;
+    }
+    
+    // Re-trigger progress display update using current values if possible
+    if (role === 'sender' && selectedFile) {
+      updateTransferProgress(lastTransferredBytes, selectedFile.size);
+    } else if (role === 'receiver' && expectedFileInfo) {
+      updateTransferProgress(receivedSize, expectedFileInfo.size);
+    }
+  }
+
+  // 3. Complete Screen
+  if (sectionComplete.classList.contains('active')) {
+    const fileName = completeFileName.textContent;
+    if (btnDownloadFile.classList.contains('hidden')) {
+      // Sender
+      completeTitle.textContent = t.complete_title_sender;
+      completeDesc.textContent = t.complete_desc_sender.replace('{filename}', fileName);
+    } else {
+      // Receiver
+      completeTitle.textContent = t.complete_title_receiver;
+      completeDesc.textContent = t.complete_desc_receiver.replace('{filename}', fileName);
+    }
+  }
+}
+
 // Helper to generate cryptographically secure UUID v4
 function generateUUID() {
   if (typeof crypto.randomUUID === 'function') {
@@ -17,6 +383,7 @@ lucide.createIcons();
 // Elements
 const statusBadge = document.getElementById('connection-status');
 const statusText = document.getElementById('status-text');
+const langSelect = document.getElementById('lang-select');
 
 // Welcome Section
 const sectionWelcome = document.getElementById('step-welcome');
@@ -92,8 +459,18 @@ let speedCalcInterval = null;
 let lastTransferredBytes = 0;
 let lastSpeedCalcTime = null;
 
+// Language dropdown event listener
+langSelect.addEventListener('change', (e) => {
+  updateLanguage(e.target.value);
+});
+
 // Init
 window.addEventListener('DOMContentLoaded', () => {
+  // Initialize language selector
+  const savedLang = getCurrentLanguage();
+  langSelect.value = savedLang;
+  updateLanguage(savedLang);
+
   // Check if Hash is present (i.e. joined via direct link)
   const hash = window.location.hash.substring(1);
   if (hash && /^[a-f0-9-]{8,40}$/i.test(hash)) {
@@ -111,9 +488,12 @@ function showSection(section) {
   lucide.createIcons();
 }
 
-function updateStatus(state, text) {
+function updateStatus(state, textOrKey) {
   statusBadge.className = `status-badge ${state}`;
-  statusText.textContent = text;
+  statusBadge.setAttribute('data-status-key', textOrKey);
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
+  statusText.textContent = t[textOrKey] || textOrKey;
 }
 
 // Format size
@@ -143,7 +523,7 @@ function resetState() {
   joinCodeInput.value = '';
   window.location.hash = '';
   
-  updateStatus('disconnected', 'לא מחובר');
+  updateStatus('disconnected', 'status_disconnected');
   showSection(sectionWelcome);
 }
 
@@ -169,7 +549,7 @@ function connectSignaling(onConnectCallback) {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${window.location.host}`;
   
-  updateStatus('connecting', 'מתחבר לשרת התיווך...');
+  updateStatus('connecting', 'status_connecting');
   ws = new WebSocket(wsUrl);
 
   ws.onopen = () => {
@@ -190,14 +570,16 @@ function connectSignaling(onConnectCallback) {
     console.log('Signaling server connection closed');
     if (role && (sectionTransfer.classList.contains('active') || sectionReceiverWaiting.classList.contains('active'))) {
       // If we are in the middle of waiting or transferring, notify user
-      alert('החיבור לשרת התיווך נותק.');
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['he'];
+      alert(t.alert_signaling_disconnected);
       resetState();
     }
   };
 
   ws.onerror = (err) => {
     console.error('Signaling error:', err);
-    updateStatus('disconnected', 'שגיאת חיבור לשרת');
+    updateStatus('disconnected', 'status_conn_error');
   };
 }
 
@@ -234,10 +616,12 @@ function initSenderMode() {
 // Handle signaling messages
 function handleSignalingMessage(message) {
   const { type, role: assignedRole, iceServers, data } = message;
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
 
   switch (type) {
     case 'joined':
-      updateStatus('connecting', 'ממתין לצד השני...');
+      updateStatus('connecting', 'status_waiting_peer');
       if (assignedRole === 'sender') {
         shareCodeDisplay.textContent = roomId;
         shareLinkInput.value = `${window.location.origin}/#${roomId}`;
@@ -249,7 +633,7 @@ function handleSignalingMessage(message) {
       break;
 
     case 'peer-joined':
-      updateStatus('connected', 'מחובר למשתמש השני');
+      updateStatus('connected', 'status_peer_connected');
       console.log('Receiver connected. Initializing WebRTC...');
       initiateWebRTC(iceServers);
       break;
@@ -259,12 +643,12 @@ function handleSignalingMessage(message) {
       break;
 
     case 'full':
-      alert('החדר מלא או לא זמין.');
+      alert(t.alert_room_full);
       resetState();
       break;
 
     case 'unauthorized':
-      alert('קוד גישה לשולח שגוי או פג תוקף.');
+      alert(t.alert_unauthorized);
       localStorage.removeItem('sender_access_key');
       resetState();
       break;
@@ -272,7 +656,7 @@ function handleSignalingMessage(message) {
     case 'peer-left':
       console.log('Peer disconnected');
       if (sectionTransfer.classList.contains('active')) {
-        alert('הצד השני התנתק. ההעברה בוטלה.');
+        alert(t.alert_peer_disconnected);
       }
       resetState();
       break;
@@ -326,11 +710,13 @@ function initiateWebRTC(iceServers) {
   peerConnection.onconnectionstatechange = () => {
     console.log('WebRTC Connection State:', peerConnection.connectionState);
     if (peerConnection.connectionState === 'connected') {
-      updateStatus('connected', 'חיבור ישיר (P2P) פעיל');
+      updateStatus('connected', 'status_p2p_active');
     } else if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
-      updateStatus('disconnected', 'החיבור הישיר נכשל');
+      updateStatus('disconnected', 'status_p2p_failed');
       if (sectionTransfer.classList.contains('active')) {
-        alert('חיבור ה-P2P נותק.');
+        const lang = getCurrentLanguage();
+        const t = translations[lang] || translations['he'];
+        alert(t.alert_p2p_disconnected);
         resetState();
       }
     }
@@ -392,17 +778,22 @@ function setupDataChannel(channel) {
           receivedChunks = [];
           receivedSize = 0;
           
+          const lang = getCurrentLanguage();
+          const t = translations[lang] || translations['he'];
+
           // Show transfer progress screen
           showSection(sectionTransfer);
-          transferTitle.textContent = 'מקבל קובץ...';
-          transferDirection.textContent = 'הורדה';
+          transferTitle.textContent = t.transfer_title_receiving;
+          transferDirection.textContent = t.transfer_dir_download;
           transferDirection.style.background = 'linear-gradient(135deg, var(--color-cyan), hsl(190, 95%, 45%))';
           transferFileName.textContent = expectedFileInfo.name;
           transferFileSize.textContent = formatBytes(expectedFileInfo.size);
           
           startTransferStats(expectedFileInfo.size);
         } else if (message.type === 'abort') {
-          alert('הצד השני ביטל את ההעברה.');
+          const lang = getCurrentLanguage();
+          const t = translations[lang] || translations['he'];
+          alert(t.alert_transfer_aborted);
           resetState();
         }
       } catch (err) {
@@ -434,9 +825,12 @@ function startSendingFile() {
     fileType: selectedFile.type
   }));
 
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
+
   showSection(sectionTransfer);
-  transferTitle.textContent = 'שולח קובץ...';
-  transferDirection.textContent = 'העלאה';
+  transferTitle.textContent = t.transfer_title_sending;
+  transferDirection.textContent = t.transfer_dir_upload;
   transferDirection.style.background = 'linear-gradient(135deg, var(--color-purple), hsl(263, 85%, 55%))';
   transferFileName.textContent = selectedFile.name;
   transferFileSize.textContent = formatBytes(selectedFile.size);
@@ -496,7 +890,10 @@ function startTransferStats(totalSize) {
     
     if (timeDelta > 0) {
       const speedBytesPerSec = byteDelta / timeDelta;
-      progressSpeed.textContent = `${formatBytes(speedBytesPerSec)} לשנייה`;
+      const lang = getCurrentLanguage();
+      const t = translations[lang] || translations['he'];
+      
+      progressSpeed.textContent = `${formatBytes(speedBytesPerSec)} ${t.speed_suffix}`;
       
       // Calculate ETA
       const remainingBytes = totalSize - currentBytes;
@@ -505,12 +902,12 @@ function startTransferStats(totalSize) {
         if (etaSeconds > 60) {
           const minutes = Math.floor(etaSeconds / 60);
           const seconds = etaSeconds % 60;
-          transferEta.textContent = `כ-${minutes} דקות ו-${seconds} שניות`;
+          transferEta.textContent = t.eta_minutes_seconds.replace('{minutes}', minutes).replace('{seconds}', seconds);
         } else {
-          transferEta.textContent = `כ-${etaSeconds} שניות`;
+          transferEta.textContent = t.eta_seconds.replace('{seconds}', etaSeconds);
         }
       } else {
-        transferEta.textContent = 'מחשב...';
+        transferEta.textContent = t.eta_calculating;
       }
     }
     
@@ -525,15 +922,22 @@ function updateTransferProgress(current, total) {
   progressFill.style.width = `${pct}%`;
   progressPct.textContent = `${pct}%`;
   
-  transferBytes.textContent = `${formatBytes(current)} מתוך ${formatBytes(total)}`;
+  const lang = getCurrentLanguage();
+  const outOfText = lang === 'he' ? 'מתוך' : 
+                    lang === 'es' ? 'de' : 
+                    lang === 'ar' ? 'من' : 
+                    lang === 'ru' ? 'из' : 'out of';
+  transferBytes.textContent = `${formatBytes(current)} ${outOfText} ${formatBytes(total)}`;
 }
 
 // Sender completion
 function completeTransferSender() {
   clearInterval(speedCalcInterval);
   setTimeout(() => {
-    completeTitle.textContent = 'הקובץ נשלח בהצלחה!';
-    completeDesc.textContent = `הקובץ ${selectedFile.name} הועבר ישירות ובצורה מאובטחת.`;
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    completeTitle.textContent = t.complete_title_sender;
+    completeDesc.textContent = t.complete_desc_sender.replace('{filename}', selectedFile.name);
     completeFileName.textContent = selectedFile.name;
     completeFileSize.textContent = formatBytes(selectedFile.size);
     btnDownloadFile.classList.add('hidden');
@@ -548,9 +952,11 @@ function completeTransferReceiver() {
   setTimeout(() => {
     const fileBlob = new Blob(receivedChunks);
     const downloadUrl = URL.createObjectURL(fileBlob);
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
     
-    completeTitle.textContent = 'הקובץ התקבל בהצלחה!';
-    completeDesc.textContent = `הקובץ ${expectedFileInfo.name} מוכן להורדה.`;
+    completeTitle.textContent = t.complete_title_receiver;
+    completeDesc.textContent = t.complete_desc_receiver.replace('{filename}', expectedFileInfo.name);
     completeFileName.textContent = expectedFileInfo.name;
     completeFileSize.textContent = formatBytes(expectedFileInfo.size);
     
@@ -587,7 +993,9 @@ btnSubmitAuth.addEventListener('click', () => {
     senderAuthInput.value = '';
     initSenderMode();
   } else {
-    alert('אנא הזן קוד גישה מורשה');
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    alert(t.alert_enter_passcode);
   }
 });
 
@@ -621,7 +1029,9 @@ btnSubmitCode.addEventListener('click', () => {
   if (code.length >= 8 && /^[a-f0-9-]{8,40}$/i.test(code)) {
     joinRoom(code);
   } else {
-    alert('אנא הזן מזהה שיתוף תקין (מינימום 8 תווים)');
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    alert(t.alert_enter_valid_code);
   }
 });
 
