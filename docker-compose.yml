@@ -21,7 +21,7 @@ services:
     command:
       - -n
       - --log-file=stdout
-      - --external-ip=82.81.95.48/10.10.10.134
+      - --external-ip=82.81.95.47/10.10.10.134
       - --listening-port=3478
       - --min-port=50000
       - --max-port=50100
