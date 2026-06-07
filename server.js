@@ -19,8 +19,34 @@ const wss = new WebSocket.Server({ server });
 // Active rooms: roomId -> Set of ws clients
 const rooms = new Map();
 
-// Generate dynamic ICE configuration based on environment variables
-function getIceServers() {
+let cachedIceServers = null;
+let lastFetchTime = 0;
+
+// Generate dynamic ICE configuration based on environment variables or Metered.ca API
+async function getIceServers() {
+  if (process.env.METERED_API_KEY && process.env.METERED_SUBDOMAIN) {
+    const now = Date.now();
+    if (cachedIceServers && (now - lastFetchTime < 5 * 60 * 1000)) {
+      return cachedIceServers;
+    }
+    
+    try {
+      const url = `https://${process.env.METERED_SUBDOMAIN}.metered.live/api/v1/turn/credentials?apiKey=${process.env.METERED_API_KEY}`;
+      console.log('Fetching fresh TURN credentials from Metered.ca...');
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        cachedIceServers = data;
+        lastFetchTime = now;
+        return data;
+      } else {
+        console.error('Failed to fetch from Metered API:', response.statusText);
+      }
+    } catch (err) {
+      console.error('Error fetching Metered TURN credentials:', err);
+    }
+  }
+
   const iceServers = [];
 
   // STUN Servers (comma-separated)
@@ -57,7 +83,7 @@ wss.on('connection', (ws) => {
   let currentRoomId = null;
   let clientRole = null; // 'sender' or 'receiver'
 
-  ws.on('message', (message) => {
+  ws.on('message', async (message) => {
     try {
       const parsed = JSON.parse(message);
       const { type, roomId, data } = parsed;
@@ -65,6 +91,7 @@ wss.on('connection', (ws) => {
       switch (type) {
         case 'join':
           currentRoomId = roomId;
+          const iceServers = await getIceServers();
           
           if (!rooms.has(roomId)) {
             // First peer joins: they are the sender/host
@@ -73,7 +100,7 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify({
               type: 'joined',
               role: 'sender',
-              iceServers: getIceServers()
+              iceServers: iceServers
             }));
             console.log(`Room ${roomId} created by Sender`);
           } else {
@@ -91,7 +118,7 @@ wss.on('connection', (ws) => {
             ws.send(JSON.stringify({
               type: 'joined',
               role: 'receiver',
-              iceServers: getIceServers()
+              iceServers: iceServers
             }));
 
             // Notify the sender that receiver has joined
@@ -99,7 +126,7 @@ wss.on('connection', (ws) => {
               if (client !== ws) {
                 client.send(JSON.stringify({
                   type: 'peer-joined',
-                  iceServers: getIceServers()
+                  iceServers: iceServers
                 }));
               }
             }

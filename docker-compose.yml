@@ -8,25 +8,6 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - PORT=3000
-      - STUN_SERVERS=stun:stun.l.google.com:19302
-      - TURN_SERVER_URL=turn:icturn.netalert.io:3478
-      - TURN_SERVER_USERNAME=fileshare
-      - TURN_SERVER_CREDENTIAL=${ACCESS_KEY}
-    restart: unless-stopped
-
-  coturn:
-    image: coturn/coturn:latest
-    container_name: fileshare-p2p-turn
-    network_mode: host
-    command:
-      - -n
-      - --log-file=stdout
-      - --external-ip=82.81.95.47/10.10.10.134
-      - --listening-port=3478
-      - --min-port=50000
-      - --max-port=50100
-      - --user=fileshare:${ACCESS_KEY}
-      - --realm=icturn.netalert.io
-      - --lt-cred-mech
-      - --fingerprint
+      - METERED_API_KEY=${METERED_API_KEY}
+      - METERED_SUBDOMAIN=fileshare-p2p
     restart: unless-stopped
