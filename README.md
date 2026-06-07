@@ -54,6 +54,15 @@ TURN_SERVER_USERNAME=your-username
 TURN_SERVER_CREDENTIAL=your-password
 ```
 
+#### 🌐 Setting up Metered.ca (Free TURN/STUN)
+1. Go to [metered.ca](https://www.metered.ca/) and sign up for a free account.
+2. In your dashboard, find your **API Key** and **Subdomain**.
+3. Add them to your environment configuration (`docker-compose.yml` or `.env` file):
+   ```env
+   METERED_API_KEY=your-api-key
+   METERED_SUBDOMAIN=your-subdomain
+   ```
+
 ---
 
 <div id="hebrew"></div>
@@ -100,6 +109,15 @@ TURN_SERVER_URL=turn:your-turn-server-address:3478
 TURN_SERVER_USERNAME=your-username
 TURN_SERVER_CREDENTIAL=your-password
 ```
+
+#### 🌐 הגדרת שירות Metered.ca (TURN/STUN חינמי)
+1. היכנס לאתר [metered.ca](https://www.metered.ca/) והירשם לחשבון חינמי.
+2. בלוח הבקרה (Dashboard) של חשבונך, מצא את ה-**API Key** וה-**Subdomain** שלך.
+3. הוסף אותם להגדרות משתני הסביבה (בקובץ `docker-compose.yml` או `.env`):
+   ```env
+   METERED_API_KEY=your-api-key
+   METERED_SUBDOMAIN=your-subdomain
+   ```
 
 ---
 
@@ -148,6 +166,15 @@ TURN_SERVER_USERNAME=su-usuario
 TURN_SERVER_CREDENTIAL=su-contraseña
 ```
 
+#### 🌐 Configuración de Metered.ca (TURN/STUN gratuito)
+1. Vaya a [metered.ca](https://www.metered.ca/) y regístrese para obtener una cuenta gratuita.
+2. En su panel de control (Dashboard), busque su **API Key** y **Subdomain**.
+3. Agréguelos a sus variables de entorno (`docker-compose.yml` o archivo `.env`):
+   ```env
+   METERED_API_KEY=your-api-key
+   METERED_SUBDOMAIN=your-subdomain
+   ```
+
 ---
 
 <div id="arabic"></div>
@@ -195,6 +222,15 @@ TURN_SERVER_USERNAME=your-username
 TURN_SERVER_CREDENTIAL=your-password
 ```
 
+#### 🌐 إعداد خدمة Metered.ca (TURN/STUN مجاني)
+1. انتقل إلى موقع [metered.ca](https://www.metered.ca/) وقم بالتسجيل للحصول على حساب مجاني.
+2. في لوحة التحكم (Dashboard) الخاصة بك، ابحث عن **API Key** و **Subdomain**.
+3. أضفهم إلى تكوين البيئة الخاصة بك (ملف `docker-compose.yml` أو `.env`):
+   ```env
+   METERED_API_KEY=your-api-key
+   METERED_SUBDOMAIN=your-subdomain
+   ```
+
 ---
 
 <div id="russian"></div>
@@ -241,3 +277,12 @@ TURN_SERVER_URL=turn:your-turn-server-address:3478
 TURN_SERVER_USERNAME=your-username
 TURN_SERVER_CREDENTIAL=your-password
 ```
+
+#### 🌐 Настройка сервиса Metered.ca (Бесплатный TURN/STUN)
+1. Перейдите на сайт [metered.ca](https://www.metered.ca/) и зарегистрируйте бесплатный аккаунт.
+2. В личном кабинете (Dashboard) найдите ваши **API Key** и **Subdomain**.
+3. Добавьте их в конфигурацию переменных окружения (`docker-compose.yml` или файл `.env`):
+   ```env
+   METERED_API_KEY=your-api-key
+   METERED_SUBDOMAIN=your-subdomain
+   ```
