@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2P FileShare | שיתוף קבצים ישיר ומאובטח</title>
+  <meta name="description" content="מערכת שיתוף קבצים ישירה ומאובטחת מקצה לקצה (P2P) ללא צורך בהתקנה, ישירות מהדפדפן.">
+  <!-- Google Fonts: Rubik for Hebrew & Outfit for English digits/layout -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Decorative background elements -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo-container">
+        <i data-lucide="share-2" class="logo-icon"></i>
+        <h1>P2P FileShare</h1>
+      </div>
+      <p class="tagline">שיתוף קבצים ישיר ומאובטח מקצה לקצה, ישירות מהדפדפן ללא שרת תיווך באמצע.</p>
+    </header>
+
+    <main class="main-card">
+      <!-- Connection Status Badge -->
+      <div class="status-badge disconnected" id="connection-status">
+        <span class="status-dot"></span>
+        <span class="status-text" id="status-text">לא מחובר</span>
+      </div>
+
+      <!-- PAGE 1: Welcome & Setup -->
+      <section id="step-welcome" class="card-section active">
+        <div class="welcome-grid">
+          <button class="choice-btn" id="btn-mode-send">
+            <div class="btn-icon-wrapper send-glow">
+              <i data-lucide="upload-cloud" class="btn-icon"></i>
+            </div>
+            <h3>שלח קובץ</h3>
+            <p>העלה קובץ וקבל קישור או קוד שיתוף מיידי</p>
+          </button>
+
+          <button class="choice-btn" id="btn-mode-receive">
+            <div class="btn-icon-wrapper receive-glow">
+              <i data-lucide="download-cloud" class="btn-icon"></i>
+            </div>
+            <h3>קבל קובץ</h3>
+            <p>הזן מזהה שיתוף כדי להתחבר לשולח ולהוריד קובץ</p>
+          </button>
+        </div>
+
+        <div class="quick-join-container hidden" id="join-code-container">
+          <div class="input-group">
+            <input type="text" id="join-code-input" placeholder="הזן מזהה שיתוף (UUID)" maxlength="36">
+            <button class="action-btn" id="btn-submit-code">התחבר</button>
+          </div>
+          <button class="text-btn" id="btn-back-welcome">חזור לבחירה</button>
+        </div>
+      </section>
+
+      <!-- PAGE 2: File Select & Share Info (Sender) -->
+      <section id="step-sender-select" class="card-section">
+        <div class="drag-drop-zone" id="drop-zone">
+          <input type="file" id="file-input" class="file-input-hidden">
+          <i data-lucide="file-up" class="upload-icon"></i>
+          <h3>גרור לכאן קובץ או לחץ לבחירה</h3>
+          <p>תומך בכל סוגי הקבצים ובכל הגדלים</p>
+          <div class="selected-file-info hidden" id="selected-file-card">
+            <i data-lucide="file" class="file-icon"></i>
+            <div class="file-meta">
+              <span class="file-name" id="selected-file-name">filename.zip</span>
+              <span class="file-size" id="selected-file-size">0 KB</span>
+            </div>
+            <button class="btn-remove-file" id="btn-remove-file" title="הסר קובץ">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="share-info-card hidden" id="share-info-card">
+          <div class="share-box">
+            <label>מזהה השיתוף שלך:</label>
+            <div class="share-code-display" id="share-code-display">------</div>
+          </div>
+
+          <div class="share-box">
+            <label>קישור לשיתוף:</label>
+            <div class="copy-input-group">
+              <input type="text" id="share-link-input" readonly value="">
+              <button class="btn-copy" id="btn-copy-link" title="העתק קישור">
+                <i data-lucide="copy" id="copy-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <p class="status-tip"><i data-lucide="loader-2" class="spin"></i> ממתין לחיבור של הצד השני...</p>
+        </div>
+
+        <button class="text-btn" id="btn-cancel-sender">חזור לתפריט</button>
+      </section>
+
+      <!-- PAGE 3: Receiver Waiting (Receiver) -->
+      <section id="step-receiver-waiting" class="card-section">
+        <div class="waiting-state">
+          <i data-lucide="loader-2" class="waiting-icon spin"></i>
+          <h3>מתחבר לשולח...</h3>
+          <p>יוצר חיבור ישיר ומאובטח. אנא המתן.</p>
+        </div>
+        <button class="text-btn" id="btn-cancel-receiver">ביטול</button>
+      </section>
+
+      <!-- PAGE 4: Active Transfer Progress -->
+      <section id="step-transfer" class="card-section">
+        <div class="transfer-header">
+          <div class="transfer-info">
+            <h3 id="transfer-title">מעביר קובץ...</h3>
+            <span class="transfer-direction-badge" id="transfer-direction">העלאה</span>
+          </div>
+          <div class="file-card-mini">
+            <i data-lucide="file" class="file-icon"></i>
+            <div class="file-meta">
+              <span class="file-name" id="transfer-file-name">filename.zip</span>
+              <span class="file-size" id="transfer-file-size">0 KB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="progress-stats">
+            <span class="progress-pct" id="progress-pct">0%</span>
+            <span class="progress-speed" id="progress-speed">0 MB/s</span>
+          </div>
+        </div>
+
+        <div class="transfer-details">
+          <div class="detail-row">
+            <span>גודל שהועבר:</span>
+            <span id="transfer-bytes">0 MB / 0 MB</span>
+          </div>
+          <div class="detail-row">
+            <span>זמן נותר משוער:</span>
+            <span id="transfer-eta">מחשב...</span>
+          </div>
+        </div>
+
+        <button class="action-btn btn-danger" id="btn-abort-transfer">ביטול העברה</button>
+      </section>
+
+      <!-- PAGE 5: Completion State -->
+      <section id="step-complete" class="card-section">
+        <div class="success-state">
+          <div class="success-icon-wrapper">
+            <i data-lucide="check-circle" class="success-icon"></i>
+          </div>
+          <h3 id="complete-title">העברת הקובץ הושלמה!</h3>
+          <p id="complete-desc">הקובץ הועבר בהצלחה ישירות בין הדפדפנים.</p>
+
+          <div class="file-card-mini" id="complete-file-card">
+            <i data-lucide="file" class="file-icon"></i>
+            <div class="file-meta">
+              <span class="file-name" id="complete-file-name">filename.zip</span>
+              <span class="file-size" id="complete-file-size">0 KB</span>
+            </div>
+          </div>
+
+          <a href="#" class="action-btn hidden" id="btn-download-file" download>
+            <i data-lucide="download"></i>
+            הורד קובץ באופן ידני
+          </a>
+
+          <button class="action-btn" id="btn-reset">שתף קובץ חדש</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p><i data-lucide="shield"></i> פרטיות מקסימלית: הקבצים מועברים ישירות בצורה מוצפנת ומבוזרת (P2P) ולא נשמרים בשרת שלנו.</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  signaling-server:
+    build: .
+    container_name: fileshare-p2p-server
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      # To run in corporate or restricted networks, uncomment and configure TURN/STUN variables:
+      # - STUN_SERVERS=stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+      # - TURN_SERVER_URL=turn:your-turn-server-address:3478
+      # - TURN_SERVER_USERNAME=your-username
+      # - TURN_SERVER_CREDENTIAL=your-password
+    restart: unless-stopped
