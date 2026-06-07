@@ -9,6 +9,25 @@ Select Language / בחר שפה:
 
 ---
 
+## 📷 Interface & Demos / צילומי מסך והדגמות
+
+### WebRTC P2P File Transfer Demo
+![File Sharing Demo](docs/assets/demo.webp)
+
+### Passcode Authentication Access Control Demo
+![Passcode Access Control Demo](docs/assets/passcode_demo.webp)
+
+### Interface Languages (Hebrew, English, Spanish, Arabic, Russian)
+| עברית (Hebrew) | English | Español (Spanish) |
+| --- | --- | --- |
+| ![Hebrew](docs/assets/hebrew.png) | ![English](docs/assets/english.png) | ![Spanish](docs/assets/spanish.png) |
+
+| العربية (Arabic) | Русский (Russian) |
+| --- | --- |
+| ![Arabic](docs/assets/arabic.png) | ![Russian](docs/assets/russian.png) |
+
+---
+
 <div id="english"></div>
 
 ## English
