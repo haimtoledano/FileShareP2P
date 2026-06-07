@@ -3,7 +3,7 @@ version: '3.8'
 services:
   signaling-server:
     build: .
-    container_name: fileshare-p2p-server
+    container_name: sharethis-server
     ports:
       - "${PORT:-3000}:3000"
     environment:

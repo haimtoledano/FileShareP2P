@@ -1,6 +1,6 @@
 const translations = {
   he: {
-    title: "P2P FileShare | שיתוף קבצים ישיר ומאובטח",
+    title: "ShareThis | שיתוף קבצים ישיר ומאובטח",
     tagline: "שיתוף קבצים ישיר ומאובטח מקצה לקצה, ישירות מהדפדפן ללא שרת תיווך באמצע.",
     status_disconnected: "לא מחובר",
     status_connecting: "מתחבר לשרת התיווך...",
@@ -57,7 +57,7 @@ const translations = {
     eta_minutes_seconds: "כ-{minutes} דקות ו-{seconds} שניות"
   },
   en: {
-    title: "P2P FileShare | Direct and Secure File Sharing",
+    title: "ShareThis | Direct and Secure File Sharing",
     tagline: "Direct end-to-end (P2P) file sharing, straight from your browser with no intermediary server.",
     status_disconnected: "Disconnected",
     status_connecting: "Connecting to signaling server...",
@@ -114,7 +114,7 @@ const translations = {
     eta_minutes_seconds: "About {minutes} minutes and {seconds} seconds"
   },
   es: {
-    title: "P2P FileShare | Compartir Archivos de Forma Directa y Segura",
+    title: "ShareThis | Compartir Archivos de Forma Directa y Segura",
     tagline: "Comparta archivos de extremo a extremo (P2P) directamente desde su navegador, sin servidor intermediario.",
     status_disconnected: "Desconectado",
     status_connecting: "Conectando al servidor de señalización...",
@@ -171,7 +171,7 @@ const translations = {
     eta_minutes_seconds: "Aproximadamente {minutes} minutos y {seconds} segundos"
   },
   ar: {
-    title: "P2P FileShare | مشاركة الملفات بشكل مباشر وآمن",
+    title: "ShareThis | مشاركة الملفات بشكل مباشر وآمن",
     tagline: "مشاركة الملفات مباشرة من طرف إلى طرف (P2P) بدون الحاجة لخدمة وسيطة، مباشرة من المتصفح.",
     status_disconnected: "غير متصل",
     status_connecting: "جاري الاتصال بخادم الإشارة...",
@@ -228,7 +228,7 @@ const translations = {
     eta_minutes_seconds: "حوالي {minutes} دقائق و {seconds} ثوانٍ"
   },
   ru: {
-    title: "P2P FileShare | Прямой и безопасный обмен файлами",
+    title: "ShareThis | Прямой и безопасный обмен файлами",
     tagline: "Прямой одноранговый (P2P) обмен файлами прямо из браузера без промежуточного сервера.",
     status_disconnected: "Не подключено",
     status_connecting: "Подключение к серверу сигнализации...",

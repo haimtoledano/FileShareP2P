@@ -1,5 +1,5 @@
 {
-  "name": "fileshare-p2p",
+  "name": "sharethis",
   "version": "1.0.0",
   "description": "P2P WebRTC File Sharing System with Dockerized Signaling Server",
   "main": "server.js",
