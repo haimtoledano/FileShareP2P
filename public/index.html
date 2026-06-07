@@ -54,6 +54,15 @@
           </button>
         </div>
 
+        <!-- Sender Access Code Prompt -->
+        <div class="quick-join-container hidden" id="sender-auth-container">
+          <div class="input-group">
+            <input type="password" id="sender-auth-input" placeholder="הזן קוד גישה מורשה לשולח">
+            <button class="action-btn" id="btn-submit-auth">אישור</button>
+          </div>
+          <button class="text-btn" id="btn-back-auth">חזור לבחירה</button>
+        </div>
+
         <div class="quick-join-container hidden" id="join-code-container">
           <div class="input-group">
             <input type="text" id="join-code-input" placeholder="הזן מזהה שיתוף (UUID)" maxlength="36">

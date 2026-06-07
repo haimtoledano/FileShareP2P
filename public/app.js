@@ -22,6 +22,10 @@ const statusText = document.getElementById('status-text');
 const sectionWelcome = document.getElementById('step-welcome');
 const btnModeSend = document.getElementById('btn-mode-send');
 const btnModeReceive = document.getElementById('btn-mode-receive');
+const senderAuthContainer = document.getElementById('sender-auth-container');
+const senderAuthInput = document.getElementById('sender-auth-input');
+const btnSubmitAuth = document.getElementById('btn-submit-auth');
+const btnBackAuth = document.getElementById('btn-back-auth');
 const joinCodeContainer = document.getElementById('join-code-container');
 const joinCodeInput = document.getElementById('join-code-input');
 const btnSubmitCode = document.getElementById('btn-submit-code');
@@ -218,9 +222,11 @@ function initSenderMode() {
   
   showSection(sectionSenderSelect);
   connectSignaling(() => {
+    const accessKey = localStorage.getItem('sender_access_key') || '';
     ws.send(JSON.stringify({
       type: 'join',
-      roomId: roomId
+      roomId: roomId,
+      accessKey: accessKey
     }));
   });
 }
@@ -254,6 +260,12 @@ function handleSignalingMessage(message) {
 
     case 'full':
       alert('החדר מלא או לא זמין.');
+      resetState();
+      break;
+
+    case 'unauthorized':
+      alert('קוד גישה לשולח שגוי או פג תוקף.');
+      localStorage.removeItem('sender_access_key');
       resetState();
       break;
 
@@ -556,11 +568,44 @@ function completeTransferReceiver() {
 
 // Event Listeners for UI
 btnModeSend.addEventListener('click', () => {
-  initSenderMode();
+  const savedKey = localStorage.getItem('sender_access_key');
+  if (savedKey) {
+    initSenderMode();
+  } else {
+    senderAuthContainer.classList.remove('hidden');
+    joinCodeContainer.classList.add('hidden'); // Ensure receiver input is closed
+    btnModeSend.parentElement.style.opacity = '0.3';
+  }
+});
+
+btnSubmitAuth.addEventListener('click', () => {
+  const key = senderAuthInput.value.trim();
+  if (key) {
+    localStorage.setItem('sender_access_key', key);
+    senderAuthContainer.classList.add('hidden');
+    btnModeSend.parentElement.style.opacity = '1';
+    senderAuthInput.value = '';
+    initSenderMode();
+  } else {
+    alert('אנא הזן קוד גישה מורשה');
+  }
+});
+
+senderAuthInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    btnSubmitAuth.click();
+  }
+});
+
+btnBackAuth.addEventListener('click', () => {
+  senderAuthContainer.classList.add('hidden');
+  btnModeSend.parentElement.style.opacity = '1';
+  senderAuthInput.value = '';
 });
 
 btnModeReceive.addEventListener('click', () => {
   joinCodeContainer.classList.remove('hidden');
+  senderAuthContainer.classList.add('hidden'); // Ensure sender input is closed
   btnModeSend.parentElement.style.opacity = '0.3';
   btnModeReceive.classList.add('active'); // CSS style hook if needed
 });
