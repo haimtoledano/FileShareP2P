@@ -91,9 +91,18 @@ wss.on('connection', (ws) => {
       switch (type) {
         case 'join':
           currentRoomId = roomId;
-          const iceServers = await getIceServers();
           
           if (!rooms.has(roomId)) {
+            // Check passcode for Sender role
+            const requiredKey = process.env.ACCESS_KEY || '${ACCESS_KEY}';
+            const { accessKey } = parsed;
+            if (accessKey !== requiredKey) {
+              console.log(`Room ${roomId} creation blocked: invalid access key`);
+              ws.send(JSON.stringify({ type: 'unauthorized' }));
+              return;
+            }
+
+            const iceServers = await getIceServers();
             // First peer joins: they are the sender/host
             rooms.set(roomId, new Set([ws]));
             clientRole = 'sender';
@@ -104,6 +113,7 @@ wss.on('connection', (ws) => {
             }));
             console.log(`Room ${roomId} created by Sender`);
           } else {
+            const iceServers = await getIceServers();
             const clients = rooms.get(roomId);
             if (clients.size >= 2) {
               // Room is full
