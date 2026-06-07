@@ -8,6 +8,7 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - PORT=3000
+      - ACCESS_KEY=${ACCESS_KEY}
       - METERED_API_KEY=${METERED_API_KEY}
       - METERED_SUBDOMAIN=fileshare-p2p
     restart: unless-stopped
