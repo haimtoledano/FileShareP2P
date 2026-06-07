@@ -94,10 +94,10 @@ wss.on('connection', (ws) => {
           
           if (!rooms.has(roomId)) {
             // Check passcode for Sender role
-            const requiredKey = process.env.ACCESS_KEY || '${ACCESS_KEY}';
+            const requiredKey = process.env.ACCESS_KEY;
             const { accessKey } = parsed;
-            if (accessKey !== requiredKey) {
-              console.log(`Room ${roomId} creation blocked: invalid access key`);
+            if (!requiredKey || accessKey !== requiredKey) {
+              console.log(`Room ${roomId} creation blocked: unauthorized or missing access key`);
               ws.send(JSON.stringify({ type: 'unauthorized' }));
               return;
             }

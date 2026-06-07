@@ -10,5 +10,5 @@ services:
       - PORT=3000
       - ACCESS_KEY=${ACCESS_KEY}
       - METERED_API_KEY=${METERED_API_KEY}
-      - METERED_SUBDOMAIN=fileshare-p2p
+      - METERED_SUBDOMAIN=${METERED_SUBDOMAIN}
     restart: unless-stopped
