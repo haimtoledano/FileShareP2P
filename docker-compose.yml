@@ -8,9 +8,25 @@ services:
       - "${PORT:-3000}:3000"
     environment:
       - PORT=3000
-      # To run in corporate or restricted networks, uncomment and configure TURN/STUN variables:
-      # - STUN_SERVERS=stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
-      # - TURN_SERVER_URL=turn:your-turn-server-address:3478
-      # - TURN_SERVER_USERNAME=your-username
-      # - TURN_SERVER_CREDENTIAL=your-password
+      - STUN_SERVERS=stun:stun.l.google.com:19302
+      - TURN_SERVER_URL=turn:icturn.netalert.io:3478
+      - TURN_SERVER_USERNAME=fileshare
+      - TURN_SERVER_CREDENTIAL=${ACCESS_KEY}
+    restart: unless-stopped
+
+  coturn:
+    image: coturn/coturn:latest
+    container_name: fileshare-p2p-turn
+    network_mode: host
+    command:
+      - -n
+      - --log-file=stdout
+      - --external-ip=82.81.95.48/10.10.10.134
+      - --listening-port=3478
+      - --min-port=50000
+      - --max-port=50100
+      - --user=fileshare:${ACCESS_KEY}
+      - --realm=icturn.netalert.io
+      - --lt-cred-mech
+      - --fingerprint
     restart: unless-stopped
