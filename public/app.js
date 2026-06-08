@@ -30,6 +30,8 @@ const translations = {
     btn_cancel_sender: "חזור לתפריט",
     waiting_connecting_title: "מתחבר לשולח...",
     waiting_connecting_desc: "יוצר חיבור ישיר ומאובטח. אנא המתן.",
+    waiting_connecting_title_receiver: "מתחבר למבקש הקובץ...",
+    waiting_connecting_desc_receiver: "יוצר חיבור ישיר ומאובטח. אנא המתן.",
     btn_cancel: "ביטול",
     transfer_title_receiving: "מקבל קובץ...",
     transfer_title_sending: "שולח קובץ...",
@@ -89,6 +91,8 @@ const translations = {
     btn_cancel_sender: "Back to menu",
     waiting_connecting_title: "Connecting to sender...",
     waiting_connecting_desc: "Establishing a direct and secure connection. Please wait.",
+    waiting_connecting_title_receiver: "Connecting to requester...",
+    waiting_connecting_desc_receiver: "Establishing a direct and secure connection. Please wait.",
     btn_cancel: "Cancel",
     transfer_title_receiving: "Receiving file...",
     transfer_title_sending: "Sending file...",
@@ -148,6 +152,8 @@ const translations = {
     btn_cancel_sender: "Volver al menú",
     waiting_connecting_title: "Conectando al remitente...",
     waiting_connecting_desc: "Estableciendo una conexión directa y segura. Por favor espere.",
+    waiting_connecting_title_receiver: "Conectando al solicitante...",
+    waiting_connecting_desc_receiver: "Estableciendo una conexión directa y segura. Por favor espere.",
     btn_cancel: "Cancelar",
     transfer_title_receiving: "Recibiendo archivo...",
     transfer_title_sending: "Enviando archivo...",
@@ -207,6 +213,8 @@ const translations = {
     btn_cancel_sender: "العودة للقائمة",
     waiting_connecting_title: "جاري الاتصال بالمرسل...",
     waiting_connecting_desc: "جاري إنشاء اتصال مباشر وآمن. يرجى الانتظار.",
+    waiting_connecting_title_receiver: "جاري الاتصال بطالب الملف...",
+    waiting_connecting_desc_receiver: "جاري إنشاء اتصال مباشر وآمن. يرجى الانتظار.",
     btn_cancel: "إلغاء",
     transfer_title_receiving: "جاري استلام الملف...",
     transfer_title_sending: "جاري إرسال الملف...",
@@ -266,6 +274,8 @@ const translations = {
     btn_cancel_sender: "Вернуться в меню",
     waiting_connecting_title: "Подключение к отправителю...",
     waiting_connecting_desc: "Установление прямого и безопасного соединения. Пожалуйста, подождите.",
+    waiting_connecting_title_receiver: "Подключение к запрашивающему...",
+    waiting_connecting_desc_receiver: "Установление прямого и безопасного соединения. Пожалуйста, подождите.",
     btn_cancel: "Отмена",
     transfer_title_receiving: "Получение файла...",
     transfer_title_sending: "Отправка файла...",
@@ -487,9 +497,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Check if Hash is present (i.e. joined via direct link)
   const hash = window.location.hash.substring(1);
-  if (hash && /^[a-f0-9-]{8,40}$/i.test(hash)) {
-    roomId = hash;
-    joinRoom(roomId);
+  if (hash) {
+    if (hash.startsWith('req-')) {
+      const realRoomId = hash.substring(4);
+      if (/^[a-f0-9-]{8,40}$/i.test(realRoomId)) {
+        roomId = realRoomId;
+        isHost = false;
+        role = 'sender';
+        pendingMode = 'request';
+        
+        // Show file selection screen first, do NOT connect signaling yet!
+        showSection(sectionSenderSelect);
+        shareInfoCard.classList.add('hidden');
+        dropZone.style.display = 'flex';
+      }
+    } else if (/^[a-f0-9-]{8,40}$/i.test(hash)) {
+      roomId = hash;
+      joinRoom(roomId);
+    }
   }
 });
 
@@ -539,8 +564,17 @@ function resetState() {
   joinCodeInput.value = '';
   window.location.hash = '';
   
+  // Reset waiting state translation keys back to default
+  const waitingTitle = sectionReceiverWaiting.querySelector('.waiting-state h3');
+  const waitingDesc = sectionReceiverWaiting.querySelector('.waiting-state p');
+  if (waitingTitle && waitingDesc) {
+    waitingTitle.setAttribute('data-i18n', 'waiting_connecting_title');
+    waitingDesc.setAttribute('data-i18n', 'waiting_connecting_desc');
+  }
+
   updateStatus('disconnected', 'status_disconnected');
   showSection(sectionWelcome);
+  updateLanguage(getCurrentLanguage());
 }
 
 // Cleanup WebRTC and WebSocket connections
@@ -674,7 +708,11 @@ function handleSignalingMessage(message) {
       
       if (isHost) {
         shareCodeDisplay.textContent = roomId;
-        shareLinkInput.value = `${window.location.origin}/#${roomId}`;
+        if (role === 'receiver') {
+          shareLinkInput.value = `${window.location.origin}/#req-${roomId}`;
+        } else {
+          shareLinkInput.value = `${window.location.origin}/#${roomId}`;
+        }
         shareInfoCard.classList.remove('hidden');
         if (role === 'receiver') {
           // Host is receiver, so hide the drag-and-drop zone
@@ -1157,6 +1195,32 @@ function handleFileSelection(file) {
   
   selectedFileCard.classList.remove('hidden');
   dropZone.style.display = 'none'; // Hide drop target visual
+
+  // If we are in pending request mode and not connected yet, initiate connection now!
+  if (pendingMode === 'request' && !ws) {
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    
+    // Dynamically change waiting section texts for sender
+    const waitingTitle = sectionReceiverWaiting.querySelector('.waiting-state h3');
+    const waitingDesc = sectionReceiverWaiting.querySelector('.waiting-state p');
+    if (waitingTitle && waitingDesc) {
+      waitingTitle.setAttribute('data-i18n', 'waiting_connecting_title_receiver');
+      waitingTitle.textContent = t.waiting_connecting_title_receiver;
+      
+      waitingDesc.setAttribute('data-i18n', 'waiting_connecting_desc_receiver');
+      waitingDesc.textContent = t.waiting_connecting_desc_receiver;
+    }
+    
+    showSection(sectionReceiverWaiting);
+    
+    connectSignaling(() => {
+      ws.send(JSON.stringify({
+        type: 'join',
+        roomId: roomId
+      }));
+    });
+  }
 
   // If the WebRTC connection is already established and channel is open, start sending immediately
   if (role === 'sender' && dataChannel && dataChannel.readyState === 'open') {
