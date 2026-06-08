@@ -58,7 +58,12 @@ const translations = {
     speed_suffix: "לשנייה",
     eta_calculating: "מחשב...",
     eta_seconds: "כ-{seconds} שניות",
-    eta_minutes_seconds: "כ-{minutes} דקות ו-{seconds} שניות"
+    eta_minutes_seconds: "כ-{minutes} דקות ו-{seconds} שניות",
+    modal_approval_title: "בקשת התחברות",
+    modal_approval_desc: "משתמש מרוחק מעוניין להתחבר לחדר שלך. האם לאשר?",
+    btn_approve: "אשר חיבור",
+    btn_reject: "דחה",
+    alert_peer_rejected: "החיבור נדחה על ידי מנהל החדר."
   },
   en: {
     title: "ShareThis | Direct and Secure File Sharing",
@@ -119,7 +124,12 @@ const translations = {
     speed_suffix: "per second",
     eta_calculating: "Calculating...",
     eta_seconds: "About {seconds} seconds",
-    eta_minutes_seconds: "About {minutes} minutes and {seconds} seconds"
+    eta_minutes_seconds: "About {minutes} minutes and {seconds} seconds",
+    modal_approval_title: "Connection Request",
+    modal_approval_desc: "A remote peer wants to connect to your room. Approve?",
+    btn_approve: "Approve",
+    btn_reject: "Reject",
+    alert_peer_rejected: "Connection request rejected by the room owner."
   },
   es: {
     title: "ShareThis | Compartir Archivos de Forma Directa y Segura",
@@ -180,7 +190,12 @@ const translations = {
     speed_suffix: "por segundo",
     eta_calculating: "Calculando...",
     eta_seconds: "Aproximadamente {seconds} segundos",
-    eta_minutes_seconds: "Aproximadamente {minutes} minutos y {seconds} segundos"
+    eta_minutes_seconds: "Aproximadamente {minutes} minutos y {seconds} segundos",
+    modal_approval_title: "Solicitud de Conexión",
+    modal_approval_desc: "¿Un usuario remoto desea conectarse a su sala. Aprobar?",
+    btn_approve: "Aprobar",
+    btn_reject: "Rechazar",
+    alert_peer_rejected: "Solicitud de conexión rechazada por el propietario de la sala."
   },
   ar: {
     title: "ShareThis | مشاركة الملفات بشكل مباشر وآمن",
@@ -241,7 +256,12 @@ const translations = {
     speed_suffix: "في الثانية",
     eta_calculating: "جاري الحساب...",
     eta_seconds: "حوالي {seconds} ثوانٍ",
-    eta_minutes_seconds: "حوالي {minutes} دقائق و {seconds} ثوانٍ"
+    eta_minutes_seconds: "حوالي {minutes} دقائق و {seconds} ثوانٍ",
+    modal_approval_title: "طلب اتصال",
+    modal_approval_desc: "يرغب مستخدم مروّس بالاتصال بغرفتك. هل توافق؟",
+    btn_approve: "موافقة",
+    btn_reject: "رفض",
+    alert_peer_rejected: "تم رفض طلب الاتصال من قبل مالك الغرفة."
   },
   ru: {
     title: "ShareThis | Прямой и безопасный обмен файлами",
@@ -302,7 +322,12 @@ const translations = {
     speed_suffix: "в секунду",
     eta_calculating: "Расчет...",
     eta_seconds: "Около {seconds} сек.",
-    eta_minutes_seconds: "Около {minutes} мин. и {seconds} сек."
+    eta_minutes_seconds: "Около {minutes} мин. и {seconds} сек.",
+    modal_approval_title: "Запрос на подключение",
+    modal_approval_desc: "Удаленный пользователь хочет подключиться к вашей комнате. Разрешить?",
+    btn_approve: "Разрешить",
+    btn_reject: "Отклонить",
+    alert_peer_rejected: "Запрос на подключение отклонен владельцем комнаты."
   }
 };
 
@@ -426,6 +451,7 @@ const fileInput = document.getElementById('file-input');
 const selectedFileCard = document.getElementById('selected-file-card');
 const selectedFileName = document.getElementById('selected-file-name');
 const selectedFileSize = document.getElementById('selected-file-size');
+const selectedFileHash = document.getElementById('selected-file-hash');
 const btnRemoveFile = document.getElementById('btn-remove-file');
 const shareInfoCard = document.getElementById('share-info-card');
 const shareCodeDisplay = document.getElementById('share-code-display');
@@ -459,6 +485,12 @@ const completeFileSize = document.getElementById('complete-file-size');
 const btnDownloadFile = document.getElementById('btn-download-file');
 const btnReset = document.getElementById('btn-reset');
 
+// Security & Integrity Elements
+const approvalModal = document.getElementById('approval-modal');
+const btnApprovePeer = document.getElementById('btn-approve-peer');
+const btnRejectPeer = document.getElementById('btn-reject-peer');
+const integrityBadgeContainer = document.getElementById('integrity-badge-container');
+
 // Constants
 const CHUNK_SIZE = 16384; // 16 KB chunks for WebRTC Data Channel
 const BUFFERED_AMOUNT_LOW_THRESHOLD = 65536; // 64 KB threshold for backpressure
@@ -472,6 +504,7 @@ let dataChannel = null;
 let selectedFile = null;
 let isHost = false;
 let pendingMode = null; // 'send' or 'request'
+let senderAccessKey = ''; // In-memory passcode storage (OWASP mitigation)
 
 // Transfer state
 let receivedChunks = [];
@@ -559,7 +592,12 @@ function resetState() {
   // Reset UI elements
   fileInput.value = '';
   selectedFileCard.classList.add('hidden');
+  selectedFileHash.classList.add('hidden');
+  selectedFileHash.textContent = '';
   shareInfoCard.classList.add('hidden');
+  approvalModal.classList.add('hidden');
+  integrityBadgeContainer.classList.add('hidden');
+  integrityBadgeContainer.innerHTML = '';
   dropZone.style.display = 'flex';
   joinCodeInput.value = '';
   window.location.hash = '';
@@ -667,7 +705,7 @@ function initSenderMode() {
   
   showSection(sectionSenderSelect);
   connectSignaling(() => {
-    const accessKey = localStorage.getItem('sender_access_key') || '';
+    const accessKey = senderAccessKey;
     ws.send(JSON.stringify({
       type: 'join',
       roomId: roomId,
@@ -685,7 +723,7 @@ function initRequestMode() {
   
   showSection(sectionSenderSelect);
   connectSignaling(() => {
-    const accessKey = localStorage.getItem('sender_access_key') || '';
+    const accessKey = senderAccessKey;
     ws.send(JSON.stringify({
       type: 'join',
       roomId: roomId,
@@ -748,9 +786,20 @@ function handleSignalingMessage(message) {
       resetState();
       break;
 
+    case 'peer-request':
+      console.log('Peer requesting join. Showing approval modal.');
+      approvalModal.classList.remove('hidden');
+      lucide.createIcons();
+      break;
+
+    case 'rejected':
+      alert(t.alert_peer_rejected);
+      resetState();
+      break;
+
     case 'unauthorized':
       alert(t.alert_unauthorized);
-      localStorage.removeItem('sender_access_key');
+      senderAccessKey = '';
       resetState();
       break;
 
@@ -907,6 +956,16 @@ function setupDataChannel(channel) {
       
       updateTransferProgress(receivedSize, expectedFileInfo.size);
       
+      // Overflow protection: abort if peer sends more data than declared (DoS prevention)
+      if (receivedSize > expectedFileInfo.size) {
+        console.error('Data overflow: received more bytes than declared in metadata.');
+        const lang = getCurrentLanguage();
+        const t = translations[lang] || translations['he'];
+        alert(lang === 'he' ? 'שגיאת אבטחה: התקבל יותר מידע מהגודל המוצהר!' : 'Security error: Received more data than declared!');
+        resetState();
+        return;
+      }
+      
       if (receivedSize >= expectedFileInfo.size) {
         completeTransferReceiver();
       }
@@ -923,7 +982,8 @@ function startSendingFile() {
     type: 'metadata',
     name: selectedFile.name,
     size: selectedFile.size,
-    fileType: selectedFile.type
+    fileType: selectedFile.type,
+    hash: selectedFile.sha256 || null
   }));
 
   const lang = getCurrentLanguage();
@@ -1048,9 +1108,41 @@ function completeTransferSender() {
 }
 
 // Receiver completion
+// Verify hash of received file
+async function verifyReceivedFileHash(blob, expectedHash) {
+  if (!expectedHash) {
+    return { status: 'skipped', message: getCurrentLanguage() === 'he' ? 'לא סופק מזהה אבטחה מהשולח' : 'No integrity hash provided by sender' };
+  }
+  if (blob.size > 150 * 1024 * 1024) {
+    return { status: 'skipped', message: getCurrentLanguage() === 'he' ? 'קובץ גדול מדי לחישוב מזהה אבטחה' : 'File too large for local integrity hashing' };
+  }
+  try {
+    const arrayBuffer = await blob.arrayBuffer();
+    let hashHex = '';
+    if (typeof crypto !== 'undefined' && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } else {
+      console.log("Non-secure context or Web Crypto API missing. Using pure-JS SHA-256 fallback for verification.");
+      hashHex = sha256Fallback(arrayBuffer);
+    }
+    
+    if (hashHex === expectedHash) {
+      return { status: 'success', hash: hashHex };
+    } else {
+      return { status: 'failed', hash: hashHex };
+    }
+  } catch (err) {
+    console.error("Failed to compute hash:", err);
+    return { status: 'error', message: err.message };
+  }
+}
+
+// Receiver completion
 function completeTransferReceiver() {
   clearInterval(speedCalcInterval);
-  setTimeout(() => {
+  setTimeout(async () => {
     const fileBlob = new Blob(receivedChunks);
     const downloadUrl = URL.createObjectURL(fileBlob);
     const lang = getCurrentLanguage();
@@ -1070,13 +1162,32 @@ function completeTransferReceiver() {
     btnDownloadFile.click();
     
     showSection(sectionComplete);
+
+    // Perform integrity check asynchronously
+    integrityBadgeContainer.className = 'hash-badge';
+    integrityBadgeContainer.classList.remove('hidden');
+    integrityBadgeContainer.innerHTML = `<i data-lucide="loader-2" class="spin"></i> <span>${lang === 'he' ? 'מחשב מזהה אבטחה...' : 'Calculating integrity check...'}</span>`;
+    lucide.createIcons();
+    
+    const result = await verifyReceivedFileHash(fileBlob, expectedFileInfo.hash);
+    if (result.status === 'success') {
+      integrityBadgeContainer.className = 'hash-badge success';
+      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-check"></i> <span>${lang === 'he' ? 'אימות שלמות קובץ תקין (SHA-256 תואם)' : 'File integrity verified (SHA-256 matches)'}</span>`;
+    } else if (result.status === 'failed') {
+      integrityBadgeContainer.className = 'hash-badge failed';
+      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-alert"></i> <span>${lang === 'he' ? 'שגיאה: אימות שלמות נכשל! הקובץ עלול להיות פגום.' : 'Warning: Integrity check failed! File may be corrupted.'}</span>`;
+    } else {
+      integrityBadgeContainer.className = 'hash-badge';
+      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-question"></i> <span>${result.message || (lang === 'he' ? 'לא ניתן לבדוק שלמות' : 'Integrity check skipped')}</span>`;
+    }
+    lucide.createIcons();
   }, 500);
 }
 
 // Event Listeners for UI
 btnModeSend.addEventListener('click', () => {
   pendingMode = 'send';
-  const savedKey = localStorage.getItem('sender_access_key');
+  const savedKey = senderAccessKey;
   if (savedKey) {
     initSenderMode();
   } else {
@@ -1088,7 +1199,7 @@ btnModeSend.addEventListener('click', () => {
 
 btnModeRequest.addEventListener('click', () => {
   pendingMode = 'request';
-  const savedKey = localStorage.getItem('sender_access_key');
+  const savedKey = senderAccessKey;
   if (savedKey) {
     initRequestMode();
   } else {
@@ -1101,7 +1212,7 @@ btnModeRequest.addEventListener('click', () => {
 btnSubmitAuth.addEventListener('click', () => {
   const key = senderAuthInput.value.trim();
   if (key) {
-    localStorage.setItem('sender_access_key', key);
+    senderAccessKey = key;
     senderAuthContainer.classList.add('hidden');
     btnModeSend.parentElement.style.opacity = '1';
     senderAuthInput.value = '';
@@ -1188,7 +1299,123 @@ dropZone.addEventListener('drop', (e) => {
   }
 });
 
-function handleFileSelection(file) {
+// Fallback pure-JS SHA-256 implementation for non-secure contexts (HTTP)
+function sha256Fallback(buffer) {
+  const words = [];
+  const dt = new DataView(buffer);
+  const byteLength = buffer.byteLength;
+  for (let i = 0; i < byteLength; i += 4) {
+    if (i + 4 <= byteLength) {
+      words.push(dt.getUint32(i, false));
+    } else {
+      let w = 0;
+      for (let j = 0; j < byteLength - i; j++) {
+        w |= dt.getUint8(i + j) << (24 - j * 8);
+      }
+      words.push(w);
+    }
+  }
+  
+  const totalBits = byteLength * 8;
+  const remBytes = byteLength % 4;
+  if (remBytes === 0) {
+    words.push(0x80000000);
+  } else {
+    words[words.length - 1] |= 0x80 << (24 - remBytes * 8);
+  }
+  
+  while ((words.length * 4) % 64 !== 56) {
+    words.push(0);
+  }
+  words.push((totalBits / 0x100000000) | 0);
+  words.push(totalBits | 0);
+
+  const h = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+  ];
+  
+  const k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+  ];
+
+  function rotr(n, x) { return (x >>> n) | (x << (32 - n)); }
+
+  for (let i = 0; i < words.length; i += 16) {
+    const w = new Array(64);
+    for (let t = 0; t < 16; t++) w[t] = words[i + t];
+    for (let t = 16; t < 64; t++) {
+      const s0 = rotr(7, w[t-15]) ^ rotr(18, w[t-15]) ^ (w[t-15] >>> 3);
+      const s1 = rotr(17, w[t-2]) ^ rotr(19, w[t-2]) ^ (w[t-2] >>> 10);
+      w[t] = (w[t-16] + s0 + w[t-7] + s1) | 0;
+    }
+
+    let [a, b, c, d, e, f, g, h_val] = h;
+
+    for (let t = 0; t < 64; t++) {
+      const S1 = rotr(6, e) ^ rotr(11, e) ^ rotr(25, e);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = (h_val + S1 + ch + k[t] + w[t]) | 0;
+      const S0 = rotr(2, a) ^ rotr(13, a) ^ rotr(22, a);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) | 0;
+
+      h_val = g;
+      g = f;
+      f = e;
+      e = (d + temp1) | 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (temp1 + temp2) | 0;
+    }
+
+    h[0] = (h[0] + a) | 0;
+    h[1] = (h[1] + b) | 0;
+    h[2] = (h[2] + c) | 0;
+    h[3] = (h[3] + d) | 0;
+    h[4] = (h[4] + e) | 0;
+    h[5] = (h[5] + f) | 0;
+    h[6] = (h[6] + g) | 0;
+    h[7] = (h[7] + h_val) | 0;
+  }
+
+  return h.map(x => {
+    let hex = (x >>> 0).toString(16);
+    return hex.padStart(8, '0');
+  }).join('');
+}
+
+// Calculate SHA-256 checksum of a file
+async function calculateHash(file) {
+  if (file.size > 150 * 1024 * 1024) {
+    console.log("File too large for memory-based SHA-256 hashing.");
+    return null;
+  }
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    if (typeof crypto !== 'undefined' && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } else {
+      console.log("Non-secure context or Web Crypto API missing. Using pure-JS SHA-256 fallback.");
+      return sha256Fallback(arrayBuffer);
+    }
+  } catch (err) {
+    console.error("Failed to calculate file hash:", err);
+    return null;
+  }
+}
+
+async function handleFileSelection(file) {
   selectedFile = file;
   selectedFileName.textContent = file.name;
   selectedFileSize.textContent = formatBytes(file.size);
@@ -1196,9 +1423,22 @@ function handleFileSelection(file) {
   selectedFileCard.classList.remove('hidden');
   dropZone.style.display = 'none'; // Hide drop target visual
 
+  // Calculate file hash asynchronously
+  selectedFileHash.classList.remove('hidden');
+  const lang = getCurrentLanguage();
+  selectedFileHash.textContent = lang === 'he' ? 'מחשב מזהה אבטחה SHA-256...' : 'Calculating SHA-256 checksum...';
+  
+  calculateHash(file).then(hash => {
+    if (hash) {
+      selectedFile.sha256 = hash;
+      selectedFileHash.textContent = `SHA-256: ${hash.substring(0, 8)}...${hash.substring(hash.length - 8)}`;
+    } else {
+      selectedFileHash.textContent = lang === 'he' ? 'אימות אבטחה: קובץ גדול מדי' : 'Security hash: File too large to hash';
+    }
+  });
+
   // If we are in pending request mode and not connected yet, initiate connection now!
   if (pendingMode === 'request' && !ws) {
-    const lang = getCurrentLanguage();
     const t = translations[lang] || translations['he'];
     
     // Dynamically change waiting section texts for sender
@@ -1276,6 +1516,27 @@ btnAbortTransfer.addEventListener('click', () => {
 
 btnReset.addEventListener('click', () => {
   resetState();
+});
+
+// Host Approval Button Listeners
+btnApprovePeer.addEventListener('click', () => {
+  approvalModal.classList.add('hidden');
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: 'approve-peer',
+      roomId: roomId
+    }));
+  }
+});
+
+btnRejectPeer.addEventListener('click', () => {
+  approvalModal.classList.add('hidden');
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: 'reject-peer',
+      roomId: roomId
+    }));
+  }
 });
 
 // Test Mode helper

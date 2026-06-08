@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="lucide.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -104,6 +104,7 @@
             <div class="file-meta">
               <span class="file-name" id="selected-file-name">filename.zip</span>
               <span class="file-size" id="selected-file-size">0 KB</span>
+              <span class="file-hash hidden" id="selected-file-hash" style="display:block; font-size:0.75rem; color:var(--text-muted); margin-top:2px;"></span>
             </div>
             <button class="btn-remove-file" id="btn-remove-file" data-i18n-title="btn_remove_title" title="הסר קובץ">
               <i data-lucide="x"></i>
@@ -199,6 +200,7 @@
               <span class="file-size" id="complete-file-size">0 KB</span>
             </div>
           </div>
+          <div id="integrity-badge-container" class="hidden"></div>
 
           <a href="#" class="action-btn hidden" id="btn-download-file" download>
             <i data-lucide="download"></i>
@@ -213,6 +215,23 @@
     <footer class="app-footer">
       <p><i data-lucide="shield"></i> <span data-i18n="footer_privacy_tip">פרטיות מקסימלית: הקבצים מועברים ישירות בצורה מוצפנת ומבוזרת (P2P) ולא נשמרים בשרת שלנו.</span></p>
     </footer>
+  </div>
+
+  <!-- Host Approval Modal -->
+  <div id="approval-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <i data-lucide="user-check" class="modal-icon"></i>
+        <h3 id="modal-approval-title" data-i18n="modal_approval_title">בקשת התחברות</h3>
+      </div>
+      <div class="modal-body">
+        <p id="modal-approval-desc" data-i18n="modal_approval_desc">משתמש מרוחק מעוניין להתחבר לחדר שלך. האם לאשר?</p>
+      </div>
+      <div class="modal-actions">
+        <button class="action-btn" id="btn-approve-peer" data-i18n="btn_approve">אשר חיבור</button>
+        <button class="action-btn btn-danger" id="btn-reject-peer" data-i18n="btn_reject">דחה</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

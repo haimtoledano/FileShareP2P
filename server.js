@@ -9,6 +9,8 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+const isProd = process.env.NODE_ENV === 'production' || process.env.ENFORCE_HTTPS === 'true';
+
 // Configure HTTP security headers with customized Content Security Policy (CSP) for WebRTC and resources
 app.use(helmet({
   contentSecurityPolicy: {
@@ -16,13 +18,25 @@ app.use(helmet({
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       "default-src": ["'self'"],
       "connect-src": ["'self'", "ws:", "wss:", "https://*.metered.live", "https://*.metered.ca"],
-      "script-src": ["'self'", "https://unpkg.com"],
+      "script-src": ["'self'"], // Removed unpkg.com! Fully secure
       "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
-      "upgrade-insecure-requests": null, // Disable upgrading to HTTPS when served over HTTP
+      "upgrade-insecure-requests": isProd ? [] : null, // Disable upgrading to HTTPS when served over HTTP in development
     },
   },
+  hsts: isProd, // Disable HSTS in development/local environments
 }));
+
+if (isProd) {
+  app.set('trust proxy', 1);
+  // Redirect HTTP to HTTPS in production
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] !== 'https' && !req.secure) {
+      return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -117,6 +131,14 @@ wss.on('connection', (ws, req) => {
   const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   ws.on('message', async (message) => {
+    // WebSocket Message Size Limit (DoS Mitigation)
+    const msgLen = Buffer.isBuffer(message) ? message.byteLength : (typeof message === 'string' ? message.length : 0);
+    if (msgLen > 65536) {
+      console.warn(`Blocked huge message (${msgLen} bytes) from IP ${clientIp}`);
+      ws.close(1009, 'Message size limit exceeded');
+      return;
+    }
+
     try {
       const parsed = JSON.parse(message);
       const { type, roomId, data } = parsed;
@@ -138,6 +160,14 @@ wss.on('connection', (ws, req) => {
           currentRoomId = roomId;
           
           if (!rooms.has(roomId)) {
+            // Enforce maximum concurrent active rooms (DoS mitigation)
+            const MAX_ROOMS = 500;
+            if (rooms.size >= MAX_ROOMS) {
+              console.warn(`Room creation rejected: reached limit of ${MAX_ROOMS} rooms.`);
+              ws.send(JSON.stringify({ type: 'full' }));
+              return;
+            }
+
             // Check rate limiting for this IP
             const attemptData = failedAttempts.get(clientIp) || { count: 0, lockUntil: 0 };
             if (attemptData.lockUntil > Date.now()) {
@@ -180,43 +210,88 @@ wss.on('connection', (ws, req) => {
             }));
             console.log(`Room ${roomId} created by Host with role ${clientRole} from IP ${clientIp}`);
           } else {
-            const iceServers = await getIceServers();
             const clients = rooms.get(roomId);
-            if (clients.size >= 2) {
-              // Room is full
+            const hostWs = Array.from(clients)[0];
+            
+            if (clients.size >= 2 || (hostWs && hostWs.pendingGuest)) {
+              // Room is full or already has a pending connection request
               ws.send(JSON.stringify({ type: 'full' }));
-              console.log(`Room ${roomId} join rejected: full`);
+              console.log(`Room ${roomId} join rejected: full or pending request`);
               return;
             }
 
-            // Second peer joins: they get the opposite role of the host
-            const hostWs = Array.from(clients)[0];
+            // Put the guest in pending state on the host socket
+            hostWs.pendingGuest = ws;
+            ws.pendingRoomId = roomId;
+
+            // Notify host that guest is requesting approval
+            hostWs.send(JSON.stringify({
+              type: 'peer-request'
+            }));
+            console.log(`Guest from ${clientIp} requested to join Room ${roomId}. Waiting for Host approval...`);
+          }
+          break;
+
+        case 'approve-peer': {
+          if (!rooms.has(roomId)) return;
+          const clients = rooms.get(roomId);
+          const hostWs = Array.from(clients)[0];
+          if (hostWs !== ws) {
+            console.warn(`Unauthorized approve-peer from non-host client`);
+            return;
+          }
+          const guestWs = hostWs.pendingGuest;
+          if (guestWs && guestWs.readyState === WebSocket.OPEN) {
+            const iceServers = await getIceServers();
             clientRole = hostWs.clientRole === 'sender' ? 'receiver' : 'sender';
-            ws.clientRole = clientRole;
-            clients.add(ws);
-            ws.send(JSON.stringify({
+            guestWs.clientRole = clientRole;
+            
+            // Add guest to active clients in room
+            clients.add(guestWs);
+            
+            // Send joined to guest
+            guestWs.send(JSON.stringify({
               type: 'joined',
               role: clientRole,
               iceServers: iceServers
             }));
-
-            // Notify the host that receiver/sender has joined
-            for (const client of clients) {
-              if (client !== ws) {
-                client.send(JSON.stringify({
-                  type: 'peer-joined',
-                  iceServers: iceServers
-                }));
-              }
-            }
-            console.log(`Guest joined Room ${roomId} with role ${clientRole} from IP ${clientIp}`);
+            
+            // Send peer-joined to host
+            hostWs.send(JSON.stringify({
+              type: 'peer-joined',
+              iceServers: iceServers
+            }));
+            
+            console.log(`Guest approved and joined Room ${roomId} with role ${clientRole}`);
           }
+          hostWs.pendingGuest = null;
           break;
+        }
+
+        case 'reject-peer': {
+          if (!rooms.has(roomId)) return;
+          const clients = rooms.get(roomId);
+          const hostWs = Array.from(clients)[0];
+          if (hostWs !== ws) return;
+          
+          const guestWs = hostWs.pendingGuest;
+          if (guestWs && guestWs.readyState === WebSocket.OPEN) {
+            guestWs.send(JSON.stringify({ type: 'rejected' }));
+          }
+          hostWs.pendingGuest = null;
+          console.log(`Guest join request rejected for Room ${roomId}`);
+          break;
+        }
 
         case 'signal':
           // Relay the signal (SDP or ICE Candidate) to the other peer in the room
           if (rooms.has(roomId)) {
             const clients = rooms.get(roomId);
+            // Verify that the sending socket is actually a member of the room!
+            if (!clients.has(ws)) {
+              console.warn(`Blocked unauthorized signal from client not in room: ${roomId}`);
+              return;
+            }
             for (const client of clients) {
               if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
@@ -237,6 +312,25 @@ wss.on('connection', (ws, req) => {
   });
 
   ws.on('close', () => {
+    // 1. If this was a pending guest, clear the pending reference on the host
+    if (ws.pendingRoomId && rooms.has(ws.pendingRoomId)) {
+      const clients = rooms.get(ws.pendingRoomId);
+      const hostWs = Array.from(clients)[0];
+      if (hostWs && hostWs.pendingGuest === ws) {
+        hostWs.pendingGuest = null;
+        console.log(`Pending guest disconnected from Room ${ws.pendingRoomId}`);
+      }
+    }
+
+    // 2. If this was the host and had a pending guest, notify and reject the pending guest
+    if (ws.pendingGuest) {
+      if (ws.pendingGuest.readyState === WebSocket.OPEN) {
+        ws.pendingGuest.send(JSON.stringify({ type: 'rejected' }));
+      }
+      ws.pendingGuest = null;
+    }
+
+    // 3. Normal room cleanup
     if (currentRoomId && rooms.has(currentRoomId)) {
       const clients = rooms.get(currentRoomId);
       clients.delete(ws);
