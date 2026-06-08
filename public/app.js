@@ -13,6 +13,8 @@ const translations = {
     mode_send_desc: "העלה קובץ וקבל קישור או קוד שיתוף מיידי",
     mode_receive_title: "קבל קובץ",
     mode_receive_desc: "הזן מזהה שיתוף כדי להתחבר לשולח ולהוריד קובץ",
+    mode_request_title: "בקש קובץ",
+    mode_request_desc: "צור קישור מאובטח שמאפשר לאחרים לשלוח לך קובץ",
     auth_placeholder: "הזן קוד גישה מורשה לשולח",
     btn_submit_auth: "אישור",
     btn_back: "חזור לבחירה",
@@ -70,6 +72,8 @@ const translations = {
     mode_send_desc: "Upload a file and get a link or direct sharing code",
     mode_receive_title: "Receive File",
     mode_receive_desc: "Enter a sharing ID to connect to the sender and download the file",
+    mode_request_title: "Request File",
+    mode_request_desc: "Create a secure link for others to send you a file",
     auth_placeholder: "Enter authorized sender passcode",
     btn_submit_auth: "Confirm",
     btn_back: "Back to selection",
@@ -127,6 +131,8 @@ const translations = {
     mode_send_desc: "Suba un archivo y obtenga un enlace o código de intercambio directo",
     mode_receive_title: "Recibir Archivo",
     mode_receive_desc: "Ingrese un ID de intercambio para conectarse al remitente y descargar el archivo",
+    mode_request_title: "Solicitar Archivo",
+    mode_request_desc: "Cree un enlace seguro para que otros le envíen un archivo",
     auth_placeholder: "Ingrese el código de acceso del remitente",
     btn_submit_auth: "Confirmar",
     btn_back: "Volver a la selección",
@@ -184,6 +190,8 @@ const translations = {
     mode_send_desc: "قم برفع ملف واحصل على رابط أو رمز مشاركة مباشر",
     mode_receive_title: "استلام ملف",
     mode_receive_desc: "أدخل معرف المشاركة للاتصال بالمرسل وتحميل الملف",
+    mode_request_title: "طلب ملف",
+    mode_request_desc: "أنشئ رابطًا آمنًا للآخرين لإرسال ملف إليك",
     auth_placeholder: "أدخل رمز المرور المخول للمرسل",
     btn_submit_auth: "تأكيد",
     btn_back: "العودة للاختيار",
@@ -241,6 +249,8 @@ const translations = {
     mode_send_desc: "Загрузите файл и получите ссылку или код совместного доступа",
     mode_receive_title: "Получить файл",
     mode_receive_desc: "Введите идентификатор доступа для подключения к отправителю и скачивания файла",
+    mode_request_title: "Запросить файл",
+    mode_request_desc: "Создайте безопасную ссылку, чтобы другие могли отправить вам файл",
     auth_placeholder: "Введите код доступа отправителя",
     btn_submit_auth: "Подтвердить",
     btn_back: "Назад к выбору",
@@ -389,6 +399,7 @@ const langSelect = document.getElementById('lang-select');
 const sectionWelcome = document.getElementById('step-welcome');
 const btnModeSend = document.getElementById('btn-mode-send');
 const btnModeReceive = document.getElementById('btn-mode-receive');
+const btnModeRequest = document.getElementById('btn-mode-request');
 const senderAuthContainer = document.getElementById('sender-auth-container');
 const senderAuthInput = document.getElementById('sender-auth-input');
 const btnSubmitAuth = document.getElementById('btn-submit-auth');
@@ -449,6 +460,8 @@ let ws = null;
 let peerConnection = null;
 let dataChannel = null;
 let selectedFile = null;
+let isHost = false;
+let pendingMode = null; // 'send' or 'request'
 
 // Transfer state
 let receivedChunks = [];
@@ -514,6 +527,8 @@ function resetState() {
   receivedChunks = [];
   receivedSize = 0;
   expectedFileInfo = null;
+  isHost = false;
+  pendingMode = null;
   
   // Reset UI elements
   fileInput.value = '';
@@ -583,10 +598,11 @@ function connectSignaling(onConnectCallback) {
   };
 }
 
-// Join room as receiver
+// Join room as guest (assigned role dynamically by server)
 function joinRoom(code) {
   roomId = code;
-  role = 'receiver';
+  isHost = false;
+  role = 'receiver'; // Default placeholder, will be updated by server
   
   showSection(sectionReceiverWaiting);
   connectSignaling(() => {
@@ -599,6 +615,7 @@ function joinRoom(code) {
 
 // Send Mode: Generate code and connect
 function initSenderMode() {
+  isHost = true;
   role = 'sender';
   roomId = generateUUID(); // Generate unguessable UUID v4
   
@@ -608,7 +625,26 @@ function initSenderMode() {
     ws.send(JSON.stringify({
       type: 'join',
       roomId: roomId,
-      accessKey: accessKey
+      accessKey: accessKey,
+      hostRole: 'sender'
+    }));
+  });
+}
+
+// Request Mode: Generate code and connect as receiver
+function initRequestMode() {
+  isHost = true;
+  role = 'receiver';
+  roomId = generateUUID(); // Generate unguessable UUID v4
+  
+  showSection(sectionSenderSelect);
+  connectSignaling(() => {
+    const accessKey = localStorage.getItem('sender_access_key') || '';
+    ws.send(JSON.stringify({
+      type: 'join',
+      roomId: roomId,
+      accessKey: accessKey,
+      hostRole: 'receiver'
     }));
   });
 }
@@ -622,12 +658,27 @@ function handleSignalingMessage(message) {
   switch (type) {
     case 'joined':
       updateStatus('connecting', 'status_waiting_peer');
-      if (assignedRole === 'sender') {
+      role = assignedRole; // Update local role to what was assigned by the server
+      
+      if (isHost) {
         shareCodeDisplay.textContent = roomId;
         shareLinkInput.value = `${window.location.origin}/#${roomId}`;
         shareInfoCard.classList.remove('hidden');
+        if (role === 'receiver') {
+          // Host is receiver, so hide the drag-and-drop zone
+          dropZone.style.display = 'none';
+        } else {
+          dropZone.style.display = 'flex';
+        }
       } else {
-        console.log('Receiver joined room. Initializing WebRTC...');
+        // Guest
+        console.log(`Guest joined room with role ${role}. Initializing WebRTC...`);
+        if (role === 'sender') {
+          // Guest is sender, show selection and hide link card
+          showSection(sectionSenderSelect);
+          shareInfoCard.classList.add('hidden');
+          dropZone.style.display = 'flex';
+        }
         initiateWebRTC(iceServers);
       }
       break;
@@ -974,9 +1025,22 @@ function completeTransferReceiver() {
 
 // Event Listeners for UI
 btnModeSend.addEventListener('click', () => {
+  pendingMode = 'send';
   const savedKey = localStorage.getItem('sender_access_key');
   if (savedKey) {
     initSenderMode();
+  } else {
+    senderAuthContainer.classList.remove('hidden');
+    joinCodeContainer.classList.add('hidden'); // Ensure receiver input is closed
+    btnModeSend.parentElement.style.opacity = '0.3';
+  }
+});
+
+btnModeRequest.addEventListener('click', () => {
+  pendingMode = 'request';
+  const savedKey = localStorage.getItem('sender_access_key');
+  if (savedKey) {
+    initRequestMode();
   } else {
     senderAuthContainer.classList.remove('hidden');
     joinCodeContainer.classList.add('hidden'); // Ensure receiver input is closed
@@ -991,7 +1055,11 @@ btnSubmitAuth.addEventListener('click', () => {
     senderAuthContainer.classList.add('hidden');
     btnModeSend.parentElement.style.opacity = '1';
     senderAuthInput.value = '';
-    initSenderMode();
+    if (pendingMode === 'request') {
+      initRequestMode();
+    } else {
+      initSenderMode();
+    }
   } else {
     const lang = getCurrentLanguage();
     const t = translations[lang] || translations['he'];
@@ -1009,6 +1077,7 @@ btnBackAuth.addEventListener('click', () => {
   senderAuthContainer.classList.add('hidden');
   btnModeSend.parentElement.style.opacity = '1';
   senderAuthInput.value = '';
+  pendingMode = null;
 });
 
 btnModeReceive.addEventListener('click', () => {
@@ -1076,6 +1145,11 @@ function handleFileSelection(file) {
   
   selectedFileCard.classList.remove('hidden');
   dropZone.style.display = 'none'; // Hide drop target visual
+
+  // If the WebRTC connection is already established and channel is open, start sending immediately
+  if (role === 'sender' && dataChannel && dataChannel.readyState === 'open') {
+    startSendingFile();
+  }
 }
 
 btnRemoveFile.addEventListener('click', (e) => {
@@ -1127,3 +1201,19 @@ btnAbortTransfer.addEventListener('click', () => {
 btnReset.addEventListener('click', () => {
   resetState();
 });
+
+// Test Mode helper
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('test') === 'true') {
+  const testBtn = document.getElementById('btn-test-mock-file');
+  if (testBtn) {
+    testBtn.style.display = 'block';
+    testBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Stop from opening file dialog
+      const mockFile = new File(["This is a test file for P2P sharing verification."], "p2p-test-file.txt", {
+        type: "text/plain"
+      });
+      handleFileSelection(mockFile);
+    });
+  }
+}

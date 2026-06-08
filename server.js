@@ -103,15 +103,16 @@ wss.on('connection', (ws) => {
             }
 
             const iceServers = await getIceServers();
-            // First peer joins: they are the sender/host
+            // First peer joins: they are the host
             rooms.set(roomId, new Set([ws]));
-            clientRole = 'sender';
+            clientRole = parsed.hostRole || 'sender';
+            ws.clientRole = clientRole;
             ws.send(JSON.stringify({
               type: 'joined',
-              role: 'sender',
+              role: clientRole,
               iceServers: iceServers
             }));
-            console.log(`Room ${roomId} created by Sender`);
+            console.log(`Room ${roomId} created by Host with role ${clientRole}`);
           } else {
             const iceServers = await getIceServers();
             const clients = rooms.get(roomId);
@@ -122,16 +123,18 @@ wss.on('connection', (ws) => {
               return;
             }
 
-            // Second peer joins: they are the receiver
+            // Second peer joins: they get the opposite role of the host
+            const hostWs = Array.from(clients)[0];
+            clientRole = hostWs.clientRole === 'sender' ? 'receiver' : 'sender';
+            ws.clientRole = clientRole;
             clients.add(ws);
-            clientRole = 'receiver';
             ws.send(JSON.stringify({
               type: 'joined',
-              role: 'receiver',
+              role: clientRole,
               iceServers: iceServers
             }));
 
-            // Notify the sender that receiver has joined
+            // Notify the host that receiver/sender has joined
             for (const client of clients) {
               if (client !== ws) {
                 client.send(JSON.stringify({
@@ -140,7 +143,7 @@ wss.on('connection', (ws) => {
                 }));
               }
             }
-            console.log(`Receiver joined Room ${roomId}`);
+            console.log(`Guest joined Room ${roomId} with role ${clientRole}`);
           }
           break;
 

@@ -63,6 +63,14 @@
             <h3 data-i18n="mode_receive_title">קבל קובץ</h3>
             <p data-i18n="mode_receive_desc">הזן מזהה שיתוף כדי להתחבר לשולח ולהוריד קובץ</p>
           </button>
+
+          <button class="choice-btn" id="btn-mode-request">
+            <div class="btn-icon-wrapper request-glow">
+              <i data-lucide="file-down" class="btn-icon"></i>
+            </div>
+            <h3 data-i18n="mode_request_title">בקש קובץ</h3>
+            <p data-i18n="mode_request_desc">צור קישור מאובטח שמאפשר לאחרים לשלוח לך קובץ</p>
+          </button>
         </div>
 
         <!-- Sender Access Code Prompt -->
@@ -90,6 +98,7 @@
           <i data-lucide="file-up" class="upload-icon"></i>
           <h3 data-i18n="drag_zone_title">גרור לכאן קובץ או לחץ לבחירה</h3>
           <p data-i18n="drag_zone_desc">תומך בכל סוגי הקבצים ובכל הגדלים</p>
+          <button id="btn-test-mock-file" style="margin-top: 12px; padding: 8px 16px; display: none; background: var(--color-purple);" class="action-btn">Simulate File (Test Mode)</button>
           <div class="selected-file-info hidden" id="selected-file-card">
             <i data-lucide="file" class="file-icon"></i>
             <div class="file-meta">
