@@ -469,6 +469,7 @@ let receivedSize = 0;
 let expectedFileInfo = null;
 let transferStartTime = null;
 let speedCalcInterval = null;
+let heartbeatInterval = null;
 let lastTransferredBytes = 0;
 let lastSpeedCalcTime = null;
 
@@ -545,6 +546,7 @@ function resetState() {
 // Cleanup WebRTC and WebSocket connections
 function cleanupConnections() {
   clearInterval(speedCalcInterval);
+  clearInterval(heartbeatInterval);
   if (dataChannel) {
     dataChannel.close();
     dataChannel = null;
@@ -559,6 +561,15 @@ function cleanupConnections() {
   }
 }
 
+function startHeartbeat() {
+  clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(() => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: 'ping' }));
+    }
+  }, 20000); // Send ping every 20 seconds
+}
+
 // WebSocket connection
 function connectSignaling(onConnectCallback) {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -569,6 +580,7 @@ function connectSignaling(onConnectCallback) {
 
   ws.onopen = () => {
     console.log('Connected to signaling server');
+    startHeartbeat();
     if (onConnectCallback) onConnectCallback();
   };
 

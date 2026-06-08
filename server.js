@@ -120,6 +120,11 @@ wss.on('connection', (ws, req) => {
       const parsed = JSON.parse(message);
       const { type, roomId, data } = parsed;
 
+      if (type === 'ping') {
+        ws.send(JSON.stringify({ type: 'pong' }));
+        return;
+      }
+
       switch (type) {
         case 'join':
           // Strict validation on roomId format to prevent path-traversal or injection
