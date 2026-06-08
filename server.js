@@ -2,10 +2,26 @@ const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
+const helmet = require('helmet');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Configure HTTP security headers with customized Content Security Policy (CSP) for WebRTC and resources
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "default-src": ["'self'"],
+      "connect-src": ["'self'", "ws:", "wss:", "https://*.metered.live", "https://*.metered.ca"],
+      "script-src": ["'self'", "https://unpkg.com"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+    },
+  },
+}));
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -79,9 +95,25 @@ async function getIceServers() {
   return iceServers;
 }
 
-wss.on('connection', (ws) => {
+// Rate limiting map for failed passcode attempts: IP -> { count, lockUntil }
+const failedAttempts = new Map();
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  } catch (e) {
+    return false;
+  }
+}
+
+wss.on('connection', (ws, req) => {
   let currentRoomId = null;
   let clientRole = null; // 'sender' or 'receiver'
+
+  // Extract client IP address for rate-limiting
+  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   ws.on('message', async (message) => {
     try {
@@ -90,17 +122,45 @@ wss.on('connection', (ws) => {
 
       switch (type) {
         case 'join':
+          // Strict validation on roomId format to prevent path-traversal or injection
+          if (!roomId || typeof roomId !== 'string' || !UUID_REGEX.test(roomId)) {
+            console.warn(`Blocked invalid roomId format: ${roomId} from IP ${clientIp}`);
+            ws.send(JSON.stringify({ type: 'full' })); // Hide errors behind standard messages to avoid info leakage
+            return;
+          }
+
           currentRoomId = roomId;
           
           if (!rooms.has(roomId)) {
-            // Check passcode for Sender role
-            const requiredKey = process.env.ACCESS_KEY;
-            const { accessKey } = parsed;
-            if (!requiredKey || accessKey !== requiredKey) {
-              console.log(`Room ${roomId} creation blocked: unauthorized or missing access key`);
+            // Check rate limiting for this IP
+            const attemptData = failedAttempts.get(clientIp) || { count: 0, lockUntil: 0 };
+            if (attemptData.lockUntil > Date.now()) {
+              console.log(`Blocked room creation from ${clientIp}: rate limited until ${new Date(attemptData.lockUntil)}`);
               ws.send(JSON.stringify({ type: 'unauthorized' }));
               return;
             }
+
+            // Check passcode for Sender role
+            const requiredKey = process.env.ACCESS_KEY;
+            const { accessKey } = parsed;
+            
+            if (!requiredKey || !safeCompare(accessKey, requiredKey)) {
+              console.log(`Room ${roomId} creation blocked: unauthorized or missing access key from IP ${clientIp}`);
+              
+              // Increment rate limit attempts
+              attemptData.count += 1;
+              if (attemptData.count >= 5) {
+                attemptData.lockUntil = Date.now() + 5 * 60 * 1000; // 5 minute lock
+                console.log(`IP ${clientIp} locked for 5 minutes due to consecutive failed passcode attempts`);
+              }
+              failedAttempts.set(clientIp, attemptData);
+
+              ws.send(JSON.stringify({ type: 'unauthorized' }));
+              return;
+            }
+
+            // Reset failed attempts on successful authentication
+            failedAttempts.delete(clientIp);
 
             const iceServers = await getIceServers();
             // First peer joins: they are the host
@@ -112,7 +172,7 @@ wss.on('connection', (ws) => {
               role: clientRole,
               iceServers: iceServers
             }));
-            console.log(`Room ${roomId} created by Host with role ${clientRole}`);
+            console.log(`Room ${roomId} created by Host with role ${clientRole} from IP ${clientIp}`);
           } else {
             const iceServers = await getIceServers();
             const clients = rooms.get(roomId);
@@ -143,7 +203,7 @@ wss.on('connection', (ws) => {
                 }));
               }
             }
-            console.log(`Guest joined Room ${roomId} with role ${clientRole}`);
+            console.log(`Guest joined Room ${roomId} with role ${clientRole} from IP ${clientIp}`);
           }
           break;
 
