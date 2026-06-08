@@ -19,6 +19,7 @@ app.use(helmet({
       "script-src": ["'self'", "https://unpkg.com"],
       "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       "font-src": ["'self'", "https://fonts.gstatic.com", "data:"],
+      "upgrade-insecure-requests": null, // Disable upgrading to HTTPS when served over HTTP
     },
   },
 }));
