@@ -9,6 +9,7 @@ const translations = {
     status_peer_connected: "מחובר למשתמש השני",
     status_p2p_active: "חיבור ישיר (P2P) פעיל",
     status_p2p_failed: "החיבור הישיר נכשל",
+    status_relay_active: "ממסר שרת (HTTPS) פעיל",
     mode_send_title: "שלח קובץ",
     mode_send_desc: "העלה קובץ וקבל קישור או קוד שיתוף מיידי",
     mode_receive_title: "קבל קובץ",
@@ -75,6 +76,7 @@ const translations = {
     status_peer_connected: "Connected to peer",
     status_p2p_active: "Direct connection (P2P) active",
     status_p2p_failed: "Direct connection failed",
+    status_relay_active: "Server Relay (HTTPS) active",
     mode_send_title: "Send File",
     mode_send_desc: "Upload a file and get a link or direct sharing code",
     mode_receive_title: "Receive File",
@@ -141,6 +143,7 @@ const translations = {
     status_peer_connected: "Conectado al otro usuario",
     status_p2p_active: "Conexión directa (P2P) activa",
     status_p2p_failed: "Conexión directa fallida",
+    status_relay_active: "Servidor intermedio (HTTPS) activo",
     mode_send_title: "Enviar Archivo",
     mode_send_desc: "Suba un archivo y obtenga un enlace o código de intercambio directo",
     mode_receive_title: "Recibir Archivo",
@@ -207,6 +210,7 @@ const translations = {
     status_peer_connected: "متصل بالطرف الآخر",
     status_p2p_active: "الاتصال المباشر (P2P) نشط",
     status_p2p_failed: "فشل الاتصال المباشر",
+    status_relay_active: "مرحل الخادم (HTTPS) نشط",
     mode_send_title: "إرسال ملف",
     mode_send_desc: "قم برفع ملف واحصل على رابط أو رمز مشاركة مباشر",
     mode_receive_title: "استلام ملف",
@@ -273,6 +277,7 @@ const translations = {
     status_peer_connected: "Подключено к участнику",
     status_p2p_active: "Прямое подключение (P2P) активно",
     status_p2p_failed: "Прямое подключение не удалось",
+    status_relay_active: "Ретрансляция сервера (HTTPS) активна",
     mode_send_title: "Отправить файл",
     mode_send_desc: "Загрузите файл и получите ссылку или код совместного доступа",
     mode_receive_title: "Получить файл",
@@ -505,6 +510,8 @@ let selectedFile = null;
 let isHost = false;
 let pendingMode = null; // 'send' or 'request'
 let senderAccessKey = ''; // In-memory passcode storage (OWASP mitigation)
+let useWebsocketRelay = false;
+let connectionTimeout = null;
 
 // Transfer state
 let receivedChunks = [];
@@ -580,6 +587,8 @@ function formatBytes(bytes) {
 // Reset client state
 function resetState() {
   cleanupConnections();
+  useWebsocketRelay = false;
+  clearTimeout(connectionTimeout);
   role = null;
   roomId = null;
   selectedFile = null;
@@ -619,6 +628,7 @@ function resetState() {
 function cleanupConnections() {
   clearInterval(speedCalcInterval);
   clearInterval(heartbeatInterval);
+  clearTimeout(connectionTimeout);
   if (dataChannel) {
     dataChannel.close();
     dataChannel = null;
@@ -810,6 +820,10 @@ function handleSignalingMessage(message) {
       }
       resetState();
       break;
+
+    case 'relay-msg':
+      handleRelayedMessage(data);
+      break;
   }
 }
 
@@ -845,6 +859,17 @@ function initiateWebRTC(iceServers) {
     iceServers: iceServers
   };
 
+  useWebsocketRelay = false;
+  clearTimeout(connectionTimeout);
+
+  // Set a fallback timeout: if WebRTC does not connect in 8 seconds, switch to WebSocket relay
+  connectionTimeout = setTimeout(() => {
+    if (peerConnection && peerConnection.connectionState !== 'connected') {
+      console.log('WebRTC connection timed out. Switching to WebSocket relay fallback.');
+      switchToWebsocketRelay();
+    }
+  }, 8000);
+
   peerConnection = new RTCPeerConnection(configuration);
 
   peerConnection.onicecandidate = (event) => {
@@ -860,14 +885,19 @@ function initiateWebRTC(iceServers) {
   peerConnection.onconnectionstatechange = () => {
     console.log('WebRTC Connection State:', peerConnection.connectionState);
     if (peerConnection.connectionState === 'connected') {
+      clearTimeout(connectionTimeout);
       updateStatus('connected', 'status_p2p_active');
     } else if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
-      updateStatus('disconnected', 'status_p2p_failed');
+      clearTimeout(connectionTimeout);
       if (sectionTransfer.classList.contains('active')) {
+        updateStatus('disconnected', 'status_p2p_failed');
         const lang = getCurrentLanguage();
         const t = translations[lang] || translations['he'];
         alert(t.alert_p2p_disconnected);
         resetState();
+      } else {
+        // Switch to WebSocket relay fallback
+        switchToWebsocketRelay();
       }
     }
   };
@@ -920,57 +950,137 @@ function setupDataChannel(channel) {
 
   channel.onmessage = (event) => {
     if (typeof event.data === 'string') {
-      // Handle control messages (JSON)
       try {
         const message = JSON.parse(event.data);
-        if (message.type === 'metadata') {
-          expectedFileInfo = message;
-          receivedChunks = [];
-          receivedSize = 0;
-          
-          const lang = getCurrentLanguage();
-          const t = translations[lang] || translations['he'];
-
-          // Show transfer progress screen
-          showSection(sectionTransfer);
-          transferTitle.textContent = t.transfer_title_receiving;
-          transferDirection.textContent = t.transfer_dir_download;
-          transferDirection.style.background = 'linear-gradient(135deg, var(--color-cyan), hsl(190, 95%, 45%))';
-          transferFileName.textContent = expectedFileInfo.name;
-          transferFileSize.textContent = formatBytes(expectedFileInfo.size);
-          
-          startTransferStats(expectedFileInfo.size);
-        } else if (message.type === 'abort') {
-          const lang = getCurrentLanguage();
-          const t = translations[lang] || translations['he'];
-          alert(t.alert_transfer_aborted);
-          resetState();
-        }
+        handleControlMessage(message);
       } catch (err) {
         console.error('Error parsing channel message:', err);
       }
     } else {
-      // Handle binary chunks
-      receivedChunks.push(event.data);
-      receivedSize += event.data.byteLength;
-      
-      updateTransferProgress(receivedSize, expectedFileInfo.size);
-      
-      // Overflow protection: abort if peer sends more data than declared (DoS prevention)
-      if (receivedSize > expectedFileInfo.size) {
-        console.error('Data overflow: received more bytes than declared in metadata.');
-        const lang = getCurrentLanguage();
-        const t = translations[lang] || translations['he'];
-        alert(lang === 'he' ? 'שגיאת אבטחה: התקבל יותר מידע מהגודל המוצהר!' : 'Security error: Received more data than declared!');
-        resetState();
-        return;
-      }
-      
-      if (receivedSize >= expectedFileInfo.size) {
-        completeTransferReceiver();
-      }
+      handleIncomingChunk(event.data);
     }
   };
+}
+
+// Global Message handlers for both WebRTC and WebSocket Relay
+function handleControlMessage(message) {
+  if (message.type === 'metadata') {
+    expectedFileInfo = message;
+    receivedChunks = [];
+    receivedSize = 0;
+    
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+
+    // Show transfer progress screen
+    showSection(sectionTransfer);
+    transferTitle.textContent = t.transfer_title_receiving;
+    transferDirection.textContent = t.transfer_dir_download;
+    transferDirection.style.background = 'linear-gradient(135deg, var(--color-cyan), hsl(190, 95%, 45%))';
+    transferFileName.textContent = expectedFileInfo.name;
+    transferFileSize.textContent = formatBytes(expectedFileInfo.size);
+    
+    startTransferStats(expectedFileInfo.size);
+  } else if (message.type === 'abort') {
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    alert(t.alert_transfer_aborted);
+    resetState();
+  }
+}
+
+function handleIncomingChunk(arrayBuffer) {
+  receivedChunks.push(arrayBuffer);
+  receivedSize += arrayBuffer.byteLength;
+  
+  updateTransferProgress(receivedSize, expectedFileInfo.size);
+  
+  // Overflow protection: abort if peer sends more data than declared (DoS prevention)
+  if (receivedSize > expectedFileInfo.size) {
+    console.error('Data overflow: received more bytes than declared in metadata.');
+    const lang = getCurrentLanguage();
+    const t = translations[lang] || translations['he'];
+    alert(lang === 'he' ? 'שגיאת אבטחה: התקבל יותר מידע מהגודל המוצהר!' : 'Security error: Received more data than declared!');
+    resetState();
+    return;
+  }
+  
+  if (receivedSize >= expectedFileInfo.size) {
+    completeTransferReceiver();
+  }
+}
+
+// Send Data (encapsulates WebSocket relay vs. WebRTC data channel)
+function sendData(data) {
+  if (useWebsocketRelay) {
+    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+      // Convert ArrayBuffer to Base64 string
+      const bytes = new Uint8Array(data);
+      let binary = '';
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      ws.send(JSON.stringify({
+        type: 'relay-msg',
+        roomId: roomId,
+        data: {
+          type: 'chunk',
+          base64: base64
+        }
+      }));
+    } else {
+      // Control message
+      const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+      ws.send(JSON.stringify({
+        type: 'relay-msg',
+        roomId: roomId,
+        data: parsedData
+      }));
+    }
+  } else {
+    dataChannel.send(data);
+  }
+}
+
+// Receive Relayed WebSocket Messages
+function handleRelayedMessage(payload) {
+  if (payload.type === 'chunk') {
+    const base64 = payload.base64;
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    handleIncomingChunk(bytes.buffer);
+  } else {
+    handleControlMessage(payload);
+  }
+}
+
+// Fallback Switcher
+function switchToWebsocketRelay() {
+  if (useWebsocketRelay) return;
+  useWebsocketRelay = true;
+  console.log('WebRTC failed/timed out. Switching to WebSocket Relay fallback...');
+  
+  clearTimeout(connectionTimeout);
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
+  
+  // Update status UI
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
+  updateStatus('connected', 'status_relay_active');
+  
+  // If we are the sender and have selected a file, start sending now!
+  if (role === 'sender' && selectedFile) {
+    startSendingFile();
+  }
 }
 
 // SENDER: Start File Transmission
@@ -978,13 +1088,13 @@ function startSendingFile() {
   if (!selectedFile) return;
 
   // Send metadata
-  dataChannel.send(JSON.stringify({
+  sendData({
     type: 'metadata',
     name: selectedFile.name,
     size: selectedFile.size,
     fileType: selectedFile.type,
     hash: selectedFile.sha256 || null
-  }));
+  });
 
   const lang = getCurrentLanguage();
   const t = translations[lang] || translations['he'];
@@ -1003,8 +1113,14 @@ function startSendingFile() {
 
   const sendNextChunk = () => {
     while (offset < selectedFile.size) {
-      if (dataChannel.bufferedAmount > dataChannel.bufferedAmountLowThreshold) {
-        // Wait for buffer to clear before sending more
+      const currentBufferAmount = useWebsocketRelay ? ws.bufferedAmount : dataChannel.bufferedAmount;
+      const threshold = useWebsocketRelay ? 65536 : dataChannel.bufferedAmountLowThreshold;
+      
+      if (currentBufferAmount > threshold) {
+        if (useWebsocketRelay) {
+          // Poll until WebSocket buffer clears
+          setTimeout(sendNextChunk, 10);
+        }
         return;
       }
       
@@ -1021,16 +1137,18 @@ function startSendingFile() {
 
   fileReader.onload = (event) => {
     const buffer = event.target.result;
-    dataChannel.send(buffer);
+    sendData(buffer);
     offset += buffer.byteLength;
     
     updateTransferProgress(offset, selectedFile.size);
     sendNextChunk();
   };
 
-  dataChannel.onbufferedamountlow = () => {
-    sendNextChunk();
-  };
+  if (!useWebsocketRelay && dataChannel) {
+    dataChannel.onbufferedamountlow = () => {
+      sendNextChunk();
+    };
+  }
 
   // Start sending
   sendNextChunk();
@@ -1508,8 +1626,8 @@ btnCancelReceiver.addEventListener('click', () => {
 });
 
 btnAbortTransfer.addEventListener('click', () => {
-  if (dataChannel && dataChannel.readyState === 'open') {
-    dataChannel.send(JSON.stringify({ type: 'abort' }));
+  if (useWebsocketRelay || (dataChannel && dataChannel.readyState === 'open')) {
+    sendData({ type: 'abort' });
   }
   resetState();
 });

@@ -81,9 +81,11 @@ async function getIceServers() {
   const iceServers = [];
 
   // STUN Servers (comma-separated)
-  if (process.env.STUN_SERVERS) {
+  if (process.env.STUN_SERVERS && process.env.STUN_SERVERS.trim() !== '') {
     process.env.STUN_SERVERS.split(',').forEach(url => {
-      iceServers.push({ urls: url.trim() });
+      if (url.trim()) {
+        iceServers.push({ urls: url.trim() });
+      }
     });
   } else {
     // Default fallback Google STUN servers
@@ -94,15 +96,15 @@ async function getIceServers() {
   }
 
   // TURN Server configuration
-  if (process.env.TURN_SERVER_URL) {
+  if (process.env.TURN_SERVER_URL && process.env.TURN_SERVER_URL.trim() !== '') {
     const turnServer = {
-      urls: process.env.TURN_SERVER_URL
+      urls: process.env.TURN_SERVER_URL.trim()
     };
-    if (process.env.TURN_SERVER_USERNAME) {
-      turnServer.username = process.env.TURN_SERVER_USERNAME;
+    if (process.env.TURN_SERVER_USERNAME && process.env.TURN_SERVER_USERNAME.trim() !== '') {
+      turnServer.username = process.env.TURN_SERVER_USERNAME.trim();
     }
-    if (process.env.TURN_SERVER_CREDENTIAL) {
-      turnServer.credential = process.env.TURN_SERVER_CREDENTIAL;
+    if (process.env.TURN_SERVER_CREDENTIAL && process.env.TURN_SERVER_CREDENTIAL.trim() !== '') {
+      turnServer.credential = process.env.TURN_SERVER_CREDENTIAL.trim();
     }
     iceServers.push(turnServer);
   }
@@ -296,6 +298,25 @@ wss.on('connection', (ws, req) => {
               if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                   type: 'signal',
+                  data
+                }));
+              }
+            }
+          }
+          break;
+
+        case 'relay-msg':
+          // Relay message (used for fallback communication when WebRTC UDP is blocked)
+          if (rooms.has(roomId)) {
+            const clients = rooms.get(roomId);
+            if (!clients.has(ws)) {
+              console.warn(`Blocked unauthorized relay-msg from client not in room: ${roomId}`);
+              return;
+            }
+            for (const client of clients) {
+              if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                  type: 'relay-msg',
                   data
                 }));
               }
