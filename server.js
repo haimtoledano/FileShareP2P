@@ -205,12 +205,13 @@ wss.on('connection', (ws, req) => {
             rooms.set(roomId, new Set([ws]));
             clientRole = parsed.hostRole || 'sender';
             ws.clientRole = clientRole;
+            ws.autoApprove = !!parsed.autoApprove;
             ws.send(JSON.stringify({
               type: 'joined',
               role: clientRole,
               iceServers: iceServers
             }));
-            console.log(`Room ${roomId} created by Host with role ${clientRole} from IP ${clientIp}`);
+            console.log(`Room ${roomId} created by Host with role ${clientRole} from IP ${clientIp} (autoApprove: ${ws.autoApprove})`);
           } else {
             const clients = rooms.get(roomId);
             const hostWs = Array.from(clients)[0];
@@ -222,15 +223,51 @@ wss.on('connection', (ws, req) => {
               return;
             }
 
-            // Put the guest in pending state on the host socket
-            hostWs.pendingGuest = ws;
-            ws.pendingRoomId = roomId;
+            if (hostWs && hostWs.autoApprove) {
+              // Auto-approve: immediately connect peer
+              const iceServers = await getIceServers();
+              clientRole = hostWs.clientRole === 'sender' ? 'receiver' : 'sender';
+              ws.clientRole = clientRole;
+              
+              // Add guest to active clients in room
+              clients.add(ws);
+              
+              // Send joined to guest
+              ws.send(JSON.stringify({
+                type: 'joined',
+                role: clientRole,
+                iceServers: iceServers
+              }));
+              
+              // Send peer-joined to host
+              hostWs.send(JSON.stringify({
+                type: 'peer-joined',
+                iceServers: iceServers
+              }));
+              
+              console.log(`Guest from ${clientIp} automatically approved and joined Room ${roomId} with role ${clientRole}`);
+            } else {
+              // Put the guest in pending state on the host socket
+              hostWs.pendingGuest = ws;
+              ws.pendingRoomId = roomId;
 
-            // Notify host that guest is requesting approval
-            hostWs.send(JSON.stringify({
-              type: 'peer-request'
-            }));
-            console.log(`Guest from ${clientIp} requested to join Room ${roomId}. Waiting for Host approval...`);
+              // Notify host that guest is requesting approval
+              hostWs.send(JSON.stringify({
+                type: 'peer-request'
+              }));
+              console.log(`Guest from ${clientIp} requested to join Room ${roomId}. Waiting for Host approval...`);
+            }
+          }
+          break;
+
+        case 'set-auto-approve':
+          if (rooms.has(roomId)) {
+            const clients = rooms.get(roomId);
+            const hostWs = Array.from(clients)[0];
+            if (hostWs === ws) {
+              hostWs.autoApprove = !!parsed.autoApprove;
+              console.log(`Room ${roomId} autoApprove set to ${hostWs.autoApprove}`);
+            }
           }
           break;
 

@@ -64,7 +64,17 @@ const translations = {
     modal_approval_desc: "משתמש מרוחק מעוניין להתחבר לחדר שלך. האם לאשר?",
     btn_approve: "אשר חיבור",
     btn_reject: "דחה",
-    alert_peer_rejected: "החיבור נדחה על ידי מנהל החדר."
+    alert_peer_rejected: "החיבור נדחה על ידי מנהל החדר.",
+    btn_choose_save_picker: "שמור קובץ ב...",
+    modal_save_title: "קבלת קובץ",
+    incoming_file_label: "קובץ נכנס:",
+    incoming_size_label: "גודל:",
+    lbl_resume_transfer: "המשך מהנקודה שהופסקה",
+    lbl_auto_approve: "אפשר חיבור אוטומטי (ללא אישור ידני)",
+    btn_choose_save_ram: "הורד לזיכרון הדפדפן",
+    save_warning_picker: "שמירה ישירה לדיסק פעילה. מומלץ לקבצים גדולים!",
+    save_warning_ram: "אזהרה: שמירה ישירה לדיסק אינה נתמכת בדפדפן זה. קבצים גדולים מ-4GB עלולים לקרוס.",
+    complete_desc_receiver_streamed: "הקובץ {filename} נשמר בהצלחה במיקום שבחרת."
   },
   en: {
     title: "ShareThis | Direct and Secure File Sharing",
@@ -131,7 +141,17 @@ const translations = {
     modal_approval_desc: "A remote peer wants to connect to your room. Approve?",
     btn_approve: "Approve",
     btn_reject: "Reject",
-    alert_peer_rejected: "Connection request rejected by the room owner."
+    alert_peer_rejected: "Connection request rejected by the room owner.",
+    btn_choose_save_picker: "Save File As...",
+    modal_save_title: "Receive File",
+    incoming_file_label: "Incoming File:",
+    incoming_size_label: "Size:",
+    lbl_resume_transfer: "Resume from last stop",
+    lbl_auto_approve: "Allow auto-connection (no manual approval)",
+    btn_choose_save_ram: "Download to Browser RAM",
+    save_warning_picker: "Direct-to-disk saving is active. Recommended for large files!",
+    save_warning_ram: "Warning: Direct-to-disk saving is not supported in this browser. Files over 4GB may crash the tab.",
+    complete_desc_receiver_streamed: "The file {filename} was successfully saved to your chosen location."
   },
   es: {
     title: "ShareThis | Compartir Archivos de Forma Directa y Segura",
@@ -198,7 +218,17 @@ const translations = {
     modal_approval_desc: "¿Un usuario remoto desea conectarse a su sala. Aprobar?",
     btn_approve: "Aprobar",
     btn_reject: "Rechazar",
-    alert_peer_rejected: "Solicitud de conexión rechazada por el propietario de la sala."
+    alert_peer_rejected: "Solicitud de conexión rechazada por el propietario de la sala.",
+    btn_choose_save_picker: "Guardar archivo como...",
+    modal_save_title: "Recibir Archivo",
+    incoming_file_label: "Archivo entrante:",
+    incoming_size_label: "Tamaño:",
+    lbl_resume_transfer: "Reanudar desde el último punto",
+    lbl_auto_approve: "Permitir conexión automática (sin aprobación manual)",
+    btn_choose_save_ram: "Descargar a RAM",
+    save_warning_picker: "¡Guardado directo al disco activo. Recomendado para archivos grandes!",
+    save_warning_ram: "Advertencia: El guardado directo al disco no es compatible con este navegador. Los archivos grandes pueden fallar.",
+    complete_desc_receiver_streamed: "El archivo {filename} se guardó correctamente en la ubicación seleccionada."
   },
   ar: {
     title: "ShareThis | مشاركة الملفات بشكل مباشر وآمن",
@@ -265,7 +295,17 @@ const translations = {
     modal_approval_desc: "يرغب مستخدم مروّس بالاتصال بغرفتك. هل توافق؟",
     btn_approve: "موافقة",
     btn_reject: "رفض",
-    alert_peer_rejected: "تم رفض طلب الاتصال من قبل مالك الغرفة."
+    alert_peer_rejected: "تم رفض طلب الاتصال من قبل مالك الغرفة.",
+    btn_choose_save_picker: "حفظ الملف باسم...",
+    modal_save_title: "استلام ملف",
+    incoming_file_label: "الملف الوارد:",
+    incoming_size_label: "الحجم:",
+    lbl_resume_transfer: "استئناف من آخر نقطة",
+    lbl_auto_approve: "السماح بالاتصال التلقائي (بدون موافقة يدوية)",
+    btn_choose_save_ram: "تحميل إلى ذاكرة المتصفح (RAM)",
+    save_warning_picker: "الحفظ المباشر على القرص نشط. موصى به للملفات الكبيرة!",
+    save_warning_ram: "تحذير: الحفظ المباشر على القرص غير مدعوم في هذا المتصفح. الملفات الكبيرة قد تتسبب في انهيار المتصفح.",
+    complete_desc_receiver_streamed: "تم حفظ الملف {filename} بنجاح في الموقع الذي اخترته."
   },
   ru: {
     title: "ShareThis | Прямой и безопасный обмен файлами",
@@ -332,7 +372,17 @@ const translations = {
     modal_approval_desc: "Удаленный пользователь хочет подключиться к вашей комнате. Разрешить?",
     btn_approve: "Разрешить",
     btn_reject: "Отклонить",
-    alert_peer_rejected: "Запрос на подключение отклонен владельцем комнаты."
+    alert_peer_rejected: "Запрос на подключение отклонен владельцем комнаты.",
+    btn_choose_save_picker: "Сохранить файл как...",
+    modal_save_title: "Получить файл",
+    incoming_file_label: "Входящий файл:",
+    incoming_size_label: "Размер:",
+    lbl_resume_transfer: "Продолжить с места остановки",
+    lbl_auto_approve: "Разрешить автоподключение (без ручного подтверждения)",
+    btn_choose_save_ram: "Скачать в память (RAM)",
+    save_warning_picker: "Прямое сохранение на диск активно. Рекомендуется для больших файлов!",
+    save_warning_ram: "Предупреждение: прямое сохранение на диск не поддерживается в этом браузере. Большие файлы могут вызвать сбой.",
+    complete_desc_receiver_streamed: "Файл {filename} успешно сохранен в выбранное место."
   }
 };
 
@@ -496,6 +546,17 @@ const btnApprovePeer = document.getElementById('btn-approve-peer');
 const btnRejectPeer = document.getElementById('btn-reject-peer');
 const integrityBadgeContainer = document.getElementById('integrity-badge-container');
 
+// Save Modal Elements
+const saveModal = document.getElementById('save-modal');
+const btnChooseSave = document.getElementById('btn-choose-save');
+const btnCancelSave = document.getElementById('btn-cancel-save');
+const saveModalFilename = document.getElementById('save-modal-filename');
+const saveModalFilesize = document.getElementById('save-modal-filesize');
+const saveModalWarning = document.getElementById('save-modal-warning');
+const resumeContainer = document.getElementById('resume-container');
+const chkResumeTransfer = document.getElementById('chk-resume-transfer');
+const chkAutoApprove = document.getElementById('chk-auto-approve');
+
 // Constants
 const CHUNK_SIZE = 16384; // 16 KB chunks for WebRTC Data Channel
 const BUFFERED_AMOUNT_LOW_THRESHOLD = 65536; // 64 KB threshold for backpressure
@@ -522,10 +583,24 @@ let speedCalcInterval = null;
 let heartbeatInterval = null;
 let lastTransferredBytes = 0;
 let lastSpeedCalcTime = null;
+let fileWritableStream = null;
+let writeQueue = Promise.resolve();
+let resumeSending = null;
 
 // Language dropdown event listener
 langSelect.addEventListener('change', (e) => {
   updateLanguage(e.target.value);
+});
+
+// Auto-approve checkbox event listener
+chkAutoApprove.addEventListener('change', (e) => {
+  if (ws && ws.readyState === WebSocket.OPEN && isHost && roomId) {
+    ws.send(JSON.stringify({
+      type: 'set-auto-approve',
+      roomId: roomId,
+      autoApprove: e.target.checked
+    }));
+  }
 });
 
 // Init
@@ -567,6 +642,58 @@ function showSection(section) {
   lucide.createIcons();
 }
 
+function getFileStateKey(name, size, hash) {
+  return `fs_state_${name}_${size}_${hash || 'nohash'}`;
+}
+
+function showSaveModal(filename, size) {
+  saveModalFilename.textContent = filename;
+  saveModalFilesize.textContent = formatBytes(size);
+  
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
+  
+  // Hide resume container by default
+  resumeContainer.classList.add('hidden');
+  chkResumeTransfer.checked = false;
+  
+  if (window.showSaveFilePicker) {
+    btnChooseSave.textContent = t.btn_choose_save_picker;
+    saveModalWarning.textContent = t.save_warning_picker;
+    saveModalWarning.classList.remove('hidden');
+    saveModalWarning.style.color = 'var(--color-success)';
+    saveModalWarning.style.background = 'rgba(16, 185, 129, 0.1)';
+    
+    // Check if there is saved progress to offer resume
+    if (expectedFileInfo) {
+      const stateKey = getFileStateKey(expectedFileInfo.name, expectedFileInfo.size, expectedFileInfo.hash);
+      const savedOffset = localStorage.getItem(stateKey);
+      if (savedOffset) {
+        const offsetVal = parseInt(savedOffset, 10);
+        if (offsetVal > 0 && offsetVal < size) {
+          // Show resume option
+          resumeContainer.classList.remove('hidden');
+          chkResumeTransfer.checked = true;
+          
+          // Update label text with formatBytes info
+          const lbl = resumeContainer.querySelector('label');
+          if (lbl && t.lbl_resume_transfer) {
+            lbl.textContent = `${t.lbl_resume_transfer} (${formatBytes(offsetVal)})`;
+          }
+        }
+      }
+    }
+  } else {
+    btnChooseSave.textContent = t.btn_choose_save_ram;
+    saveModalWarning.textContent = t.save_warning_ram;
+    saveModalWarning.classList.remove('hidden');
+    saveModalWarning.style.color = 'var(--color-danger)';
+    saveModalWarning.style.background = 'rgba(239, 68, 68, 0.1)';
+  }
+  
+  saveModal.classList.remove('hidden');
+}
+
 function updateStatus(state, textOrKey) {
   statusBadge.className = `status-badge ${state}`;
   statusBadge.setAttribute('data-status-key', textOrKey);
@@ -597,6 +724,16 @@ function resetState() {
   expectedFileInfo = null;
   isHost = false;
   pendingMode = null;
+  
+  saveModal.classList.add('hidden');
+  if (fileWritableStream) {
+    try {
+      fileWritableStream.close();
+    } catch(e) {}
+    fileWritableStream = null;
+  }
+  writeQueue = Promise.resolve();
+  resumeSending = null;
   
   // Reset UI elements
   fileInput.value = '';
@@ -720,7 +857,8 @@ function initSenderMode() {
       type: 'join',
       roomId: roomId,
       accessKey: accessKey,
-      hostRole: 'sender'
+      hostRole: 'sender',
+      autoApprove: chkAutoApprove.checked
     }));
   });
 }
@@ -738,7 +876,8 @@ function initRequestMode() {
       type: 'join',
       roomId: roomId,
       accessKey: accessKey,
-      hostRole: 'receiver'
+      hostRole: 'receiver',
+      autoApprove: chkAutoApprove.checked
     }));
   });
 }
@@ -969,18 +1108,13 @@ function handleControlMessage(message) {
     receivedChunks = [];
     receivedSize = 0;
     
-    const lang = getCurrentLanguage();
-    const t = translations[lang] || translations['he'];
-
-    // Show transfer progress screen
-    showSection(sectionTransfer);
-    transferTitle.textContent = t.transfer_title_receiving;
-    transferDirection.textContent = t.transfer_dir_download;
-    transferDirection.style.background = 'linear-gradient(135deg, var(--color-cyan), hsl(190, 95%, 45%))';
-    transferFileName.textContent = expectedFileInfo.name;
-    transferFileSize.textContent = formatBytes(expectedFileInfo.size);
-    
-    startTransferStats(expectedFileInfo.size);
+    // Show save modal to choose path or fallback to RAM
+    showSaveModal(expectedFileInfo.name, expectedFileInfo.size);
+  } else if (message.type === 'start-transfer') {
+    if (role === 'sender' && typeof resumeSending === 'function') {
+      resumeSending(message.offset || 0);
+      resumeSending = null;
+    }
   } else if (message.type === 'abort') {
     const lang = getCurrentLanguage();
     const t = translations[lang] || translations['he'];
@@ -990,8 +1124,24 @@ function handleControlMessage(message) {
 }
 
 function handleIncomingChunk(arrayBuffer) {
-  receivedChunks.push(arrayBuffer);
   receivedSize += arrayBuffer.byteLength;
+  
+  if (fileWritableStream) {
+    // Write directly to disk via sequential writeQueue to prevent concurrent write collisions
+    writeQueue = writeQueue.then(() => fileWritableStream.write(arrayBuffer));
+    
+    // Save progress to localStorage every 2 MB or on final chunk
+    if (expectedFileInfo) {
+      const stateKey = getFileStateKey(expectedFileInfo.name, expectedFileInfo.size, expectedFileInfo.hash);
+      const lastSaved = parseInt(localStorage.getItem(stateKey) || "0", 10);
+      if (receivedSize - lastSaved >= 2 * 1024 * 1024 || receivedSize >= expectedFileInfo.size) {
+        localStorage.setItem(stateKey, receivedSize.toString());
+      }
+    }
+  } else {
+    // RAM Fallback
+    receivedChunks.push(arrayBuffer);
+  }
   
   updateTransferProgress(receivedSize, expectedFileInfo.size);
   
@@ -1006,7 +1156,25 @@ function handleIncomingChunk(arrayBuffer) {
   }
   
   if (receivedSize >= expectedFileInfo.size) {
-    completeTransferReceiver();
+    if (fileWritableStream) {
+      // Wait for all writes to finish, then close the stream and complete
+      writeQueue.then(async () => {
+        try {
+          await fileWritableStream.close();
+          fileWritableStream = null;
+        } catch (err) {
+          console.error("Error closing writable stream:", err);
+        }
+        completeTransferReceiver();
+      }).catch(err => {
+        console.error("Error during file stream writing:", err);
+        const lang = getCurrentLanguage();
+        alert(lang === 'he' ? 'שגיאה בכתיבת הקובץ לדיסק!' : 'Error writing file to disk!');
+        resetState();
+      });
+    } else {
+      completeTransferReceiver();
+    }
   }
 }
 
@@ -1040,7 +1208,11 @@ function sendData(data) {
       }));
     }
   } else {
-    dataChannel.send(data);
+    if (typeof data === 'object' && !(data instanceof ArrayBuffer) && !ArrayBuffer.isView(data)) {
+      dataChannel.send(JSON.stringify(data));
+    } else {
+      dataChannel.send(data);
+    }
   }
 }
 
@@ -1106,7 +1278,10 @@ function startSendingFile() {
   transferFileName.textContent = selectedFile.name;
   transferFileSize.textContent = formatBytes(selectedFile.size);
 
-  startTransferStats(selectedFile.size);
+  // Set placeholder/waiting text for progress speed and ETA until receiver is ready
+  progressSpeed.textContent = '';
+  transferEta.textContent = lang === 'he' ? 'ממתין לאישור ומציאת נתיב שמירה...' : 'Waiting for receiver to approve...';
+  updateTransferProgress(0, selectedFile.size);
 
   let offset = 0;
   const fileReader = new FileReader();
@@ -1150,14 +1325,20 @@ function startSendingFile() {
     };
   }
 
-  // Start sending
-  sendNextChunk();
+  // Do NOT send immediately. Set callback to resume when 'start-transfer' is received.
+  resumeSending = (startOffset = 0) => {
+    offset = startOffset;
+    updateTransferProgress(offset, selectedFile.size);
+    startTransferStats(selectedFile.size);
+    sendNextChunk();
+  };
 }
 
 // Transfer Statistics tracking
 function startTransferStats(totalSize) {
   transferStartTime = Date.now();
-  lastTransferredBytes = 0;
+  const initialBytes = (role === 'sender') ? (selectedFile ? selectedFile.size * (parseFloat(progressPct.textContent) / 100) : 0) : receivedSize;
+  lastTransferredBytes = initialBytes;
   lastSpeedCalcTime = Date.now();
   
   clearInterval(speedCalcInterval);
@@ -1261,44 +1442,64 @@ async function verifyReceivedFileHash(blob, expectedHash) {
 function completeTransferReceiver() {
   clearInterval(speedCalcInterval);
   setTimeout(async () => {
-    const fileBlob = new Blob(receivedChunks);
-    const downloadUrl = URL.createObjectURL(fileBlob);
     const lang = getCurrentLanguage();
     const t = translations[lang] || translations['he'];
+    const isStreamed = (receivedChunks.length === 0 && receivedSize > 0);
     
     completeTitle.textContent = t.complete_title_receiver;
-    completeDesc.textContent = t.complete_desc_receiver.replace('{filename}', expectedFileInfo.name);
     completeFileName.textContent = expectedFileInfo.name;
     completeFileSize.textContent = formatBytes(expectedFileInfo.size);
     
-    // Configure download button
-    btnDownloadFile.href = downloadUrl;
-    btnDownloadFile.download = expectedFileInfo.name;
-    btnDownloadFile.classList.remove('hidden');
-    
-    // Automatically trigger download
-    btnDownloadFile.click();
-    
     showSection(sectionComplete);
-
-    // Perform integrity check asynchronously
-    integrityBadgeContainer.className = 'hash-badge';
-    integrityBadgeContainer.classList.remove('hidden');
-    integrityBadgeContainer.innerHTML = `<i data-lucide="loader-2" class="spin"></i> <span>${lang === 'he' ? 'מחשב מזהה אבטחה...' : 'Calculating integrity check...'}</span>`;
-    lucide.createIcons();
     
-    const result = await verifyReceivedFileHash(fileBlob, expectedFileInfo.hash);
-    if (result.status === 'success') {
-      integrityBadgeContainer.className = 'hash-badge success';
-      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-check"></i> <span>${lang === 'he' ? 'אימות שלמות קובץ תקין (SHA-256 תואם)' : 'File integrity verified (SHA-256 matches)'}</span>`;
-    } else if (result.status === 'failed') {
-      integrityBadgeContainer.className = 'hash-badge failed';
-      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-alert"></i> <span>${lang === 'he' ? 'שגיאה: אימות שלמות נכשל! הקובץ עלול להיות פגום.' : 'Warning: Integrity check failed! File may be corrupted.'}</span>`;
-    } else {
-      integrityBadgeContainer.className = 'hash-badge';
-      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-question"></i> <span>${result.message || (lang === 'he' ? 'לא ניתן לבדוק שלמות' : 'Integrity check skipped')}</span>`;
+    // Clean up localStorage progress record on completion
+    if (expectedFileInfo) {
+      const stateKey = getFileStateKey(expectedFileInfo.name, expectedFileInfo.size, expectedFileInfo.hash);
+      localStorage.removeItem(stateKey);
     }
-    lucide.createIcons();
+    
+    if (isStreamed) {
+      completeDesc.textContent = t.complete_desc_receiver_streamed.replace('{filename}', expectedFileInfo.name);
+      btnDownloadFile.classList.add('hidden');
+      
+      // Perform badge update
+      integrityBadgeContainer.className = 'hash-badge success';
+      integrityBadgeContainer.classList.remove('hidden');
+      integrityBadgeContainer.innerHTML = `<i data-lucide="shield-check"></i> <span>${lang === 'he' ? 'הקובץ נשמר ישירות לדיסק בהצלחה' : 'File saved directly to disk successfully'}</span>`;
+      lucide.createIcons();
+    } else {
+      const fileBlob = new Blob(receivedChunks);
+      const downloadUrl = URL.createObjectURL(fileBlob);
+      
+      completeDesc.textContent = t.complete_desc_receiver.replace('{filename}', expectedFileInfo.name);
+      
+      // Configure download button
+      btnDownloadFile.href = downloadUrl;
+      btnDownloadFile.download = expectedFileInfo.name;
+      btnDownloadFile.classList.remove('hidden');
+      
+      // Automatically trigger download
+      btnDownloadFile.click();
+      
+      // Perform integrity check asynchronously
+      integrityBadgeContainer.className = 'hash-badge';
+      integrityBadgeContainer.classList.remove('hidden');
+      integrityBadgeContainer.innerHTML = `<i data-lucide="loader-2" class="spin"></i> <span>${lang === 'he' ? 'מחשב מזהה אבטחה...' : 'Calculating integrity check...'}</span>`;
+      lucide.createIcons();
+      
+      const result = await verifyReceivedFileHash(fileBlob, expectedFileInfo.hash);
+      if (result.status === 'success') {
+        integrityBadgeContainer.className = 'hash-badge success';
+        integrityBadgeContainer.innerHTML = `<i data-lucide="shield-check"></i> <span>${lang === 'he' ? 'אימות שלמות קובץ תקין (SHA-256 תואם)' : 'File integrity verified (SHA-256 matches)'}</span>`;
+      } else if (result.status === 'failed') {
+        integrityBadgeContainer.className = 'hash-badge failed';
+        integrityBadgeContainer.innerHTML = `<i data-lucide="shield-alert"></i> <span>${lang === 'he' ? 'שגיאה: אימות שלמות נכשל! הקובץ עלול להיות פגום.' : 'Warning: Integrity check failed! File may be corrupted.'}</span>`;
+      } else {
+        integrityBadgeContainer.className = 'hash-badge';
+        integrityBadgeContainer.innerHTML = `<i data-lucide="shield-question"></i> <span>${result.message || (lang === 'he' ? 'לא ניתן לבדוק שלמות' : 'Integrity check skipped')}</span>`;
+      }
+      lucide.createIcons();
+    }
   }, 500);
 }
 
@@ -1657,6 +1858,77 @@ btnRejectPeer.addEventListener('click', () => {
   }
 });
 
+// Save Modal Button Listeners
+btnChooseSave.addEventListener('click', async () => {
+  let offset = 0;
+  
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: expectedFileInfo.name
+      });
+      
+      const shouldResume = !resumeContainer.classList.contains('hidden') && chkResumeTransfer.checked;
+      
+      if (shouldResume) {
+        const stateKey = getFileStateKey(expectedFileInfo.name, expectedFileInfo.size, expectedFileInfo.hash);
+        const savedOffset = localStorage.getItem(stateKey);
+        if (savedOffset) {
+          offset = parseInt(savedOffset, 10);
+        }
+      }
+      
+      saveModal.classList.add('hidden');
+      
+      // If we are resuming, keep existing data, else overwrite/truncate
+      fileWritableStream = await handle.createWritable({ keepExistingData: shouldResume });
+      writeQueue = Promise.resolve();
+      
+      if (shouldResume && offset > 0) {
+        await fileWritableStream.seek(offset);
+      }
+    } catch (err) {
+      console.error("Save picker was cancelled or failed:", err);
+      if (useWebsocketRelay || (dataChannel && dataChannel.readyState === 'open')) {
+        sendData({ type: 'abort' });
+      }
+      resetState();
+      return;
+    }
+  } else {
+    saveModal.classList.add('hidden');
+    // RAM Fallback
+    receivedChunks = [];
+    fileWritableStream = null;
+  }
+  
+  // Set starting offset
+  receivedSize = offset;
+  
+  // Send start-transfer control message containing the offset
+  sendData({ type: 'start-transfer', offset: offset });
+  
+  // Show transfer progress screen
+  const lang = getCurrentLanguage();
+  const t = translations[lang] || translations['he'];
+  showSection(sectionTransfer);
+  transferTitle.textContent = t.transfer_title_receiving;
+  transferDirection.textContent = t.transfer_dir_download;
+  transferDirection.style.background = 'linear-gradient(135deg, var(--color-cyan), hsl(190, 95%, 45%))';
+  transferFileName.textContent = expectedFileInfo.name;
+  transferFileSize.textContent = formatBytes(expectedFileInfo.size);
+  
+  startTransferStats(expectedFileInfo.size);
+});
+
+btnCancelSave.addEventListener('click', () => {
+  saveModal.classList.add('hidden');
+  if (useWebsocketRelay || (dataChannel && dataChannel.readyState === 'open')) {
+    sendData({ type: 'abort' });
+  }
+  resetState();
+});
+
 // Test Mode helper
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.get('test') === 'true') {
@@ -1672,3 +1944,12 @@ if (urlParams.get('test') === 'true') {
     });
   }
 }
+
+// Warn user before leaving the page during an active transfer
+window.addEventListener('beforeunload', (e) => {
+  if (sectionTransfer.classList.contains('active')) {
+    e.preventDefault();
+    e.returnValue = ''; // Trigger browser confirmation dialog
+    return '';
+  }
+});
